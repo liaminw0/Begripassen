@@ -9,8 +9,6 @@ logo_url: /images/logo.svg
 media_folder: static/images/uploads
 public_folder: /images/uploads
 
-publish_mode: editorial_workflow
-
 slug:
   encoding: ascii
   clean_accents: true
@@ -45,6 +43,10 @@ collections:
       - label: Locatie
         name: location
         widget: string
+        required: false
+      - label: Coverafbeelding
+        name: image
+        widget: image
         required: false
       - label: Aanmeldknop tonen
         name: show_signup
