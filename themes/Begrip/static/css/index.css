@@ -491,6 +491,8 @@
 
 #contact-container .contact-links {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
@@ -501,6 +503,9 @@
   grid-template-columns: 1fr;
   gap: 0.12rem;
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 0.9rem 1rem;
   border-left: 4px solid #f7fbf4;
   border-radius: 0 0.7rem 0.7rem 0;
@@ -525,6 +530,9 @@
 #contact-container .contact-links strong {
   font-size: clamp(1rem, 0.65vw + 0.88rem, 1.2rem);
   font-weight: 600;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 #steunons-container .support-overview {
@@ -556,6 +564,8 @@
 
 #steunons-container .support-payment-placeholder {
   width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   min-height: 20rem;
   padding: 1.4rem;
   border: 2px dashed rgba(247, 251, 244, 0.5);
@@ -581,6 +591,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.6rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 #steunons-container .donation-options span {
@@ -589,10 +601,15 @@
   border: 1px solid rgba(247, 251, 244, 0.45);
   background-color: rgba(247, 251, 244, 0.1);
   font-weight: 600;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 #steunons-container .donate-disabled {
   margin-top: auto;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 0.9rem 1rem;
   border: 1px solid rgba(247, 251, 244, 0.55);
   border-radius: 0.65rem;
@@ -600,6 +617,8 @@
   color: #f7fbf4;
   font-size: 0.98rem;
   font-weight: 700;
+  text-align: center;
+  overflow-wrap: anywhere;
   cursor: not-allowed;
   opacity: 0.85;
 }
@@ -729,28 +748,38 @@
     min-height: 100svh;
     grid-template-rows: 58svh 1fr;
     align-content: stretch;
+    justify-items: center;
     gap: 0.35rem;
     padding: 3.35rem 1rem 0.8rem;
   }
 
   #heading-container .container-left {
+    min-width: 0;
+    max-width: 28rem;
+    width: min(28rem, 100%);
     min-height: 58svh;
+    justify-self: center;
     align-self: start;
     justify-content: center;
+    align-items: center;
     gap: 0.85rem;
     padding: 0;
-    margin-top: 0;
+    margin: 0 auto;
+    text-align: center;
   }
 
   #heading-container .container-left img {
     width: clamp(10rem, 46vw, 13rem);
+    display: block;
+    margin-inline: auto;
   }
 
   #heading-container .container-left p {
-    width: min(28rem, 100%);
-    max-width: 28rem;
+    width: 100%;
+    max-width: 24rem;
     font-size: clamp(1rem, 1.9vw + 0.68rem, 1.18rem);
     line-height: 1.5;
+    margin-inline: auto;
   }
 
   #heading-container .container-left p {
@@ -825,9 +854,20 @@
     max-width: none;
   }
 
+  #contact-container .contact-links,
+  #contact-container .contact-links a {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
   #steunons-container .support-payment-placeholder {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
     min-height: 16rem;
     padding: 1rem;
+    overflow: hidden;
   }
 
   #footer-container .footer-shell {

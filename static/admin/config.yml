@@ -30,6 +30,8 @@ collections:
       - { label: 'Location', name: 'location', widget: 'string', required: false }
       - { label: 'Time', name: 'time', widget: 'string', required: false }
       - { label: 'Organiser', name: 'organiser', widget: 'string', required: false }
+      - { label: 'Show Aanmelden Button', name: 'show_signup', widget: 'boolean', required: false, default: false }
+      - { label: 'Aanmelden Link', name: 'signup_link', widget: 'string', required: false }
       - { label: 'Author', name: 'author', widget: 'string' }
       - { label: 'Event Image', name: 'image', widget: 'image', required: false }
       - { label: 'Body', name: 'body', widget: 'markdown' }

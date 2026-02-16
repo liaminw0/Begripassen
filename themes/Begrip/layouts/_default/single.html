@@ -47,6 +47,9 @@
 
       <div class="single-actions">
         {{ if eq .Section "events" }}
+        {{ if and .Params.show_signup .Params.signup_link }}
+        <a href="{{ .Params.signup_link | safeURL }}" target="_blank" rel="noopener noreferrer">Aanmelden</a>
+        {{ end }}
         <a href="{{ "/events/" | relURL }}">Terug naar events</a>
         {{ else }}
         <a href="{{ printf "/%s/" .Section | relURL }}">Terug naar overzicht</a>

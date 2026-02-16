@@ -76,6 +76,16 @@ document.addEventListener("DOMContentLoaded", function() {
   let scrollDirection = "down";
   let ticking = false;
   const isEventsListPage = !!document.querySelector("#events-page");
+  const isBlogsListPage = !!document.querySelector("#blogs-page");
+
+  if (isBlogsListPage) {
+    document.querySelectorAll(".reveal-up").forEach(function(el) {
+      el.classList.remove("reveal-up");
+      el.classList.remove("is-visible");
+      el.style.transitionDelay = "";
+    });
+    return;
+  }
 
   const revealSelectors = [
     "#heading-container .container-left",
