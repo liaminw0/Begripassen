@@ -122,8 +122,6 @@
   display: block;
   object-fit: cover;
   background-color: #0f2c06;
-  transform: translateZ(0);
-  backface-visibility: hidden;
 }
 
 #heading-container .container-left p {

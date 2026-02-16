@@ -44,51 +44,10 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 
 document.addEventListener("DOMContentLoaded", function() {
   const heroVideo = document.querySelector("#heading-container .hero-video");
-  const heroSection = document.querySelector("#heading-container");
-  const isMobileViewport = window.matchMedia("(max-width: 900px)").matches;
-
-  function safePlayVideo(videoEl) {
-    if (!videoEl) {
-      return;
-    }
-    const playPromise = videoEl.play();
-    if (playPromise && typeof playPromise.catch === "function") {
-      playPromise.catch(function() {
-        // Ignore autoplay interruptions from browser policies.
-      });
-    }
-  }
-
   if (heroVideo) {
     heroVideo.addEventListener("loadedmetadata", function() {
       heroVideo.currentTime = 5.5;
     }, { once: true });
-  }
-
-  if (heroVideo && heroSection && isMobileViewport && "IntersectionObserver" in window) {
-    let heroIsVisible = true;
-    const observer = new IntersectionObserver(function(entries) {
-      entries.forEach(function(entry) {
-        heroIsVisible = entry.isIntersecting && entry.intersectionRatio >= 0.18;
-      });
-      if (heroIsVisible) {
-        safePlayVideo(heroVideo);
-      } else {
-        heroVideo.pause();
-      }
-    }, {
-      threshold: [0, 0.18, 0.4]
-    });
-
-    observer.observe(heroSection);
-
-    document.addEventListener("visibilitychange", function() {
-      if (document.hidden) {
-        heroVideo.pause();
-      } else if (heroIsVisible) {
-        safePlayVideo(heroVideo);
-      }
-    });
   }
 
   const heroIntroTargets = document.querySelectorAll([
