@@ -1,0 +1,106 @@
+backend:
+  name: netlify-git-gateway
+  branch: main
+
+local_backend: true
+
+site_url: https://begripassen.nl
+display_url: https://begripassen.nl
+logo_url: /images/logo.svg
+
+media_folder: static/images/uploads
+public_folder: /images/uploads
+
+slug:
+  encoding: ascii
+  clean_accents: true
+  sanitize_replacement: "-"
+
+collections:
+  - name: events
+    label: Events
+    label_singular: Event
+    folder: content/events
+    create: true
+    extension: md
+    format: frontmatter
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{title}} - {{date}}"
+    fields:
+      - label: Title
+        name: title
+        widget: string
+      - label: Event Date
+        name: date
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: HH:mm
+        format: YYYY-MM-DDTHH:mm:ssZ
+      - label: Author
+        name: author
+        widget: string
+        required: false
+      - label: Organiser
+        name: organiser
+        widget: string
+        required: false
+      - label: Location
+        name: location
+        widget: string
+        required: false
+      - label: Time (optional text override)
+        name: time
+        widget: string
+        required: false
+        hint: Use this if you want custom text instead of the time from Event Date.
+      - label: Hero Image
+        name: image
+        widget: image
+        required: false
+      - label: Show Signup Button
+        name: show_signup
+        widget: boolean
+        default: false
+        required: false
+      - label: Signup Link
+        name: signup_link
+        widget: string
+        required: false
+      - label: Publish Date
+        name: publishdate
+        widget: date
+        required: false
+      - label: Body
+        name: body
+        widget: markdown
+
+  - name: blogs
+    label: Blogs
+    label_singular: Blog
+    folder: content/blogs
+    create: true
+    extension: md
+    format: frontmatter
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{title}} - {{date}}"
+    fields:
+      - label: Title
+        name: title
+        widget: string
+      - label: Publish Date
+        name: date
+        widget: datetime
+        date_format: YYYY-MM-DD
+        time_format: HH:mm
+        format: YYYY-MM-DDTHH:mm:ssZ
+      - label: Author
+        name: author
+        widget: string
+        required: false
+      - label: Hero Image
+        name: image
+        widget: image
+        required: false
+      - label: Body
+        name: body
+        widget: markdown
