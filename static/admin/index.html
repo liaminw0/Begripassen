@@ -1,14 +1,207 @@
 <!DOCTYPE html>
-<html>
+<html lang="nl">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Content Manager</title>
-    <!-- Include the script that enables Netlify Identity on this page. -->
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BEGR!P Admin</title>
+    <style>
+      :root {
+        --bg: #1e5b0d;
+        --panel: #f7fbf4;
+        --border: #d8e4d2;
+        --text: #182013;
+        --muted: #54634f;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: "Manrope", "Segoe UI", Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        padding: 2rem 1rem;
+      }
+      .shell {
+        max-width: 62rem;
+        margin: 0 auto;
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 1rem;
+        padding: 1rem;
+      }
+      h1 { margin: 0 0 1rem; }
+      .row { display: grid; gap: 0.75rem; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .row3 { display: grid; gap: 0.75rem; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .field { display: flex; flex-direction: column; gap: 0.35rem; }
+      label { font-size: 0.9rem; color: var(--muted); font-weight: 700; }
+      input, textarea, select {
+        width: 100%;
+        border: 1px solid var(--border);
+        border-radius: 0.55rem;
+        padding: 0.65rem 0.7rem;
+        font: inherit;
+        color: var(--text);
+        background: #fff;
+      }
+      textarea { min-height: 14rem; resize: vertical; }
+      .actions { margin-top: 1rem; display: flex; gap: 0.6rem; flex-wrap: wrap; }
+      button {
+        border: 1px solid #bfd1b8;
+        border-radius: 999px;
+        padding: 0.55rem 1rem;
+        background: #edf6e7;
+        color: #1d2818;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      #status { margin-top: 1rem; font-weight: 700; }
+      .hidden { display: none; }
+      @media (max-width: 800px) {
+        .row, .row3 { grid-template-columns: minmax(0, 1fr); }
+      }
+    </style>
   </head>
   <body>
-    <!-- Include the script that builds the page and powers Decap CMS -->
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+    <main class="shell">
+      <h1>BEGR!P Custom Admin</h1>
+      <div class="row">
+        <div class="field">
+          <label for="adminKey">Admin key</label>
+          <input id="adminKey" type="password" placeholder="Enter admin key" />
+        </div>
+        <div class="field">
+          <label for="type">Content type</label>
+          <select id="type">
+            <option value="blog">Blog</option>
+            <option value="event">Event</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:0.75rem;">
+        <div class="field">
+          <label for="title">Title</label>
+          <input id="title" type="text" />
+        </div>
+        <div class="field">
+          <label for="slug">Slug (optional)</label>
+          <input id="slug" type="text" placeholder="auto-from-title" />
+        </div>
+      </div>
+
+      <div class="row3" style="margin-top:0.75rem;">
+        <div class="field">
+          <label for="date">Date / datetime</label>
+          <input id="date" type="text" placeholder="2026-02-16 or 2026-02-16T19:00:00.000Z" />
+        </div>
+        <div class="field">
+          <label for="author">Author</label>
+          <input id="author" type="text" />
+        </div>
+        <div class="field">
+          <label for="image">Image path (optional)</label>
+          <input id="image" type="text" placeholder="/img/cover.jpg" />
+        </div>
+      </div>
+
+      <section id="eventFields" class="hidden" style="margin-top:0.75rem;">
+        <div class="row3">
+          <div class="field">
+            <label for="location">Location</label>
+            <input id="location" type="text" />
+          </div>
+          <div class="field">
+            <label for="time">Time</label>
+            <input id="time" type="text" placeholder="20:00" />
+          </div>
+          <div class="field">
+            <label for="organiser">Organiser</label>
+            <input id="organiser" type="text" />
+          </div>
+        </div>
+        <div class="row" style="margin-top:0.75rem; align-items:end;">
+          <div class="field">
+            <label for="signupLink">Aanmelden link (optional)</label>
+            <input id="signupLink" type="text" placeholder="https://..." />
+          </div>
+          <div class="field">
+            <label><input id="showSignup" type="checkbox" /> Show aanmelden button</label>
+          </div>
+        </div>
+      </section>
+
+      <div class="field" style="margin-top:0.75rem;">
+        <label for="body">Body (markdown)</label>
+        <textarea id="body"></textarea>
+      </div>
+
+      <div class="actions">
+        <button id="createBtn" type="button">Create entry</button>
+      </div>
+      <p id="status"></p>
+    </main>
+
+    <script>
+      const typeEl = document.getElementById("type");
+      const eventFields = document.getElementById("eventFields");
+      const statusEl = document.getElementById("status");
+      const createBtn = document.getElementById("createBtn");
+
+      function updateTypeUI() {
+        eventFields.classList.toggle("hidden", typeEl.value !== "event");
+      }
+
+      typeEl.addEventListener("change", updateTypeUI);
+      updateTypeUI();
+
+      function value(id) {
+        return document.getElementById(id).value.trim();
+      }
+
+      createBtn.addEventListener("click", async function () {
+        statusEl.textContent = "Saving...";
+        statusEl.style.color = "#2f3c29";
+
+        const type = value("type");
+        const payload = {
+          type,
+          title: value("title"),
+          slug: value("slug"),
+          date: value("date"),
+          author: value("author"),
+          image: value("image"),
+          body: value("body"),
+        };
+
+        if (type === "event") {
+          payload.location = value("location");
+          payload.time = value("time");
+          payload.organiser = value("organiser");
+          payload.signup_link = value("signupLink");
+          payload.show_signup = document.getElementById("showSignup").checked;
+        }
+
+        try {
+          const response = await fetch("/.netlify/functions/create-entry", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-admin-key": value("adminKey"),
+            },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await response.json();
+          if (!response.ok) {
+            throw new Error(data.error || "Failed to save entry");
+          }
+
+          statusEl.textContent = `Saved: ${data.path}`;
+          statusEl.style.color = "#1e5b0d";
+        } catch (err) {
+          statusEl.textContent = `Error: ${err.message}`;
+          statusEl.style.color = "#9a1b1b";
+        }
+      });
+    </script>
   </body>
 </html>
