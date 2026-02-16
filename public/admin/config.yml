@@ -9,6 +9,8 @@ logo_url: /images/logo.svg
 media_folder: static/images/uploads
 public_folder: /images/uploads
 
+publish_mode: editorial_workflow
+
 slug:
   encoding: ascii
   clean_accents: true
@@ -16,8 +18,8 @@ slug:
 
 collections:
   - name: events
-    label: Events
-    label_singular: Event
+    label: Evenementen
+    label_singular: Evenement
     folder: content/events
     create: true
     extension: md
@@ -25,50 +27,35 @@ collections:
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
     summary: "{{title}} - {{date}}"
     fields:
-      - label: Title
+      - label: Titel
         name: title
         widget: string
-      - label: Event Date
+      - label: Datum
         name: date
-        widget: datetime
+        widget: date
         date_format: YYYY-MM-DD
-        time_format: HH:mm
-        format: YYYY-MM-DDTHH:mm:ssZ
-      - label: Author
-        name: author
-        widget: string
-        required: false
-      - label: Organiser
-        name: organiser
-        widget: string
-        required: false
-      - label: Location
-        name: location
-        widget: string
-        required: false
-      - label: Time (optional text override)
+      - label: Tijd
         name: time
         widget: string
         required: false
-        hint: Use this if you want custom text instead of the time from Event Date.
-      - label: Hero Image
-        name: image
-        widget: image
+      - label: Organisator
+        name: organiser
+        widget: string
         required: false
-      - label: Show Signup Button
+      - label: Locatie
+        name: location
+        widget: string
+        required: false
+      - label: Aanmeldknop tonen
         name: show_signup
         widget: boolean
         default: false
         required: false
-      - label: Signup Link
+      - label: Aanmeldknop URL
         name: signup_link
         widget: string
         required: false
-      - label: Publish Date
-        name: publishdate
-        widget: date
-        required: false
-      - label: Body
+      - label: Inhoud
         name: body
         widget: markdown
 
@@ -80,25 +67,22 @@ collections:
     extension: md
     format: frontmatter
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
-    summary: "{{title}} - {{date}}"
+    summary: "{{author}} - {{date}}"
     fields:
-      - label: Title
-        name: title
-        widget: string
-      - label: Publish Date
+      - label: Publicatiedatum
         name: date
         widget: datetime
         date_format: YYYY-MM-DD
         time_format: HH:mm
         format: YYYY-MM-DDTHH:mm:ssZ
-      - label: Author
+      - label: Auteur
         name: author
         widget: string
         required: false
-      - label: Hero Image
+      - label: Uitgelichte afbeelding
         name: image
         widget: image
         required: false
-      - label: Body
+      - label: Inhoud
         name: body
         widget: markdown

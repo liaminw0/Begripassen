@@ -10,18 +10,12 @@
     <script src="https://unpkg.com/decap-cms@^3.8.0/dist/decap-cms.js"></script>
     <script>
       if (window.netlifyIdentity) {
-        window.netlifyIdentity.init();
-
         window.netlifyIdentity.on("init", function (user) {
           if (!user) {
             window.netlifyIdentity.on("login", function () {
               document.location.href = "/admin/";
             });
           }
-        });
-
-        window.netlifyIdentity.on("error", function (err) {
-          console.error("Netlify Identity error:", err);
         });
       }
     </script>
