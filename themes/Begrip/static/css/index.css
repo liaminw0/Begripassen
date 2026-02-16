@@ -803,15 +803,7 @@
   }
 
   #heading-container .hero-video-bg::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: -1px;
-    height: 3.25rem;
-    background: linear-gradient(to bottom, rgba(30, 91, 13, 0), rgba(30, 91, 13, 1));
-    z-index: 2;
-    pointer-events: none;
+    display: none;
   }
 
   #heading-container .hero-video-bg::after {
