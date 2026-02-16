@@ -1,27 +1,31 @@
 <div id="footer-container">
-  <div class="section">
-    <div class="container-left">
-      <a href="{{ site.BaseURL }}">
-      <img src="/images/logo.svg" alt="logo">
-      </a>  
-      <div class="socials">
-        <a href="https://www.instagram.com/begripassen/"><li><i class="fa-brands fa-instagram"></i></li></a>
-        <a href="mailto:contact@begripassen.nl"><li><i class="fa-solid fa-envelope"></i></li></a>
-      </div>
+  <div class="section footer-shell">
+    {{ $baseURL := .Site.BaseURL }}
+    {{ $currentPath := .RelPermalink }}
+    {{ $isBaseURL := eq $currentPath "/" }}
+
+    <div class="footer-brand">
+      <a class="footer-logo" href="{{ site.BaseURL }}">
+        <img src="/images/logo.svg" alt="logo">
+      </a>
+      <p class="footer-tagline">Samen bouwen aan ruimte voor ontmoeting, ideeën en groei in Assen.</p>
     </div>
-    <div class="container-right">
-      <div class="footermenu">
-        {{ $baseURL := .Site.BaseURL }}
-        {{ $currentPath := .RelPermalink }}
-        {{ $isBaseURL := eq $currentPath "/" }}
-        <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#heading-container"><li><i class="fa-solid fa-house"></i><p>Home</p></li></a>
-        <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#about-container"><i class="fa-solid fa-circle-info"></i><p>Over Ons</p></a>
-        <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#blog-container"><i class="fa-solid fa-blog"></i><p>Blog</p></a></li>
-        <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#nieuwsbrief-container"><i class="fa-solid fa-envelope"></i><p>NieuwsBrief</p></a>
-        <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#contact-container"><i class="fa-solid fa-at"></i><p>Contact</p></a></li>
-        <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#steunons-container"><i class="fa-solid fa-handshake-angle"></i><p>Steun Ons!</p></a>
-      </div>
-      <p>Copyright 2024 Begr!p Assen</p>
+
+    <div class="footer-links">
+      <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#heading-container"><i class="fa-solid fa-house"></i><span>Home</span></a>
+      <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#about-container"><i class="fa-solid fa-circle-info"></i><span>Over Ons</span></a>
+      <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#blog-container"><i class="fa-solid fa-blog"></i><span>Blog</span></a>
+      <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#nieuwsbrief-container"><i class="fa-solid fa-envelope"></i><span>Nieuwsbrief</span></a>
+      <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#contact-container"><i class="fa-solid fa-at"></i><span>Contact</span></a>
+      <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#steunons-container"><i class="fa-solid fa-handshake-angle"></i><span>Steun Ons</span></a>
     </div>
+
+    <div class="footer-connect">
+      <a href="https://www.instagram.com/begripassen/" aria-label="Instagram"><i class="fa-brands fa-instagram"></i><span>@begripassen</span></a>
+      <a href="mailto:contact@begripassen.nl" aria-label="E-mail"><i class="fa-solid fa-envelope"></i><span>contact@begripassen.nl</span></a>
+      <a href="tel:+31685997001" aria-label="Telefoon"><i class="fa-solid fa-phone"></i><span>+31 685997001</span></a>
+    </div>
+
+    <p class="footer-copy">Copyright 2024 BEGR!P Assen</p>
   </div>
 </div>

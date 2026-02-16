@@ -1,6 +1,11 @@
 {{ define "main"}}
 <main>
   <div id="heading-container">
+    <div class="hero-video-bg" aria-hidden="true">
+      <video class="hero-video" autoplay muted loop playsinline preload="metadata" poster="{{ "images/about.jpeg" | relURL }}">
+        <source src="{{ "videos/heading.mp4" | relURL }}" type="video/mp4">
+      </video>
+    </div>
     <div class="section">
         <div class="container-left">
           <img src="images/logo.svg" alt="">
@@ -48,8 +53,16 @@
   <div id="blog-container">
     <div class="section">
     <div class="container-left">
-      <h1>Blog</h1>
-      <p>{{ .Params.blog }}</p>
+      <div class="instagram-feed-widget">
+        <h1>@begripassen</h1>
+        <iframe
+          title="Instagram feed @begripassen"
+          src="https://www.instagram.com/begripassen/embed"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade">
+        </iframe>
+        <a href="https://www.instagram.com/begripassen/" target="_blank" rel="noopener noreferrer" class="event-button">Bekijk op Instagram</a>
+      </div>
     </div>
     <div class="container-right">
       <div class="blog-widget">
@@ -78,32 +91,41 @@
       {{- partial "newsletter" . -}}
     </div>
   </div>
-  <div class="contact-devider devider"></div>
-  <div id="contact-container">
-    <div class="section">
-      <div class="container-left">
-        <h1>Contact</h1>
-        <p>{{ .Params.contact }}</p>
-      </div>
-      <div class="container-right">
-        <a href="tel:+1800229933"><h2> +31 685997001 <i class="fa-brands fa-whatsapp"></i> </h2></a>
-        <a href="mailto:contact@begripassen.nl"><h2> contact@begripassen.nl <i class="fa-solid fa-envelope"></i></h2></a>
-        <a href="https://www.instagram.com/begripassen"><h2> DM ons op Instagram <i class="fa-brands fa-instagram"></i></h2></a>
-      </div>
-    </div>
-  </div>
   <div class="steunons-devider devider"></div>
   <div id="steunons-container">
     <div class="section">
-      <div class="container-left">
-        <a href="#"><h2><i class="fa-solid fa-lightbulb"></i> Deel jouw ideeën met ons</h2></a>
-        <a href="#"><h2><i class="fa-solid fa-share"></i> Deel Begr!p met je vrienden</h2></a>
-        <a href="#"><h2><i class="fa-solid fa-hand-holding-dollar"></i> Help ons financieel</h2></a>
-      </div>
-      <div class="container-right">
-
+      <div class="support-overview">
         <h1>Steun Ons</h1>
         <p>{{ .Params.support }}</p>
+        <div class="support-actions">
+          <a href="#">Deel jouw idee met ons</a>
+          <a href="#">Vertel over BEGR!P in je netwerk</a>
+        </div>
+      </div>
+      <div class="support-payment-placeholder">
+        <h2>Donatie Module</h2>
+        <p>Binnenkort koppelen we hier Mollie (of vergelijkbaar) voor veilige online donaties.</p>
+        <div class="donation-options" aria-hidden="true">
+          <span>€5</span>
+          <span>€10</span>
+          <span>€25</span>
+          <span>Aangepast</span>
+        </div>
+        <button type="button" class="donate-disabled" disabled>Doneren (binnenkort beschikbaar)</button>
+      </div>
+    </div>
+  </div>
+  <div class="contact-devider devider"></div>
+  <div id="contact-container">
+    <div class="section">
+      <div class="contact-intro">
+        <h1>Contact</h1>
+        <p>{{ .Params.contact }}</p>
+      </div>
+      <div class="contact-links">
+        <a href="tel:+31685997001"><span class="contact-label">Bel of WhatsApp</span><strong>+31 685997001</strong></a>
+        <a href="mailto:contact@begripassen.nl"><span class="contact-label">E-mail</span><strong>contact@begripassen.nl</strong></a>
+        <a href="https://www.instagram.com/begripassen" target="_blank" rel="noopener noreferrer"><span class="contact-label">Instagram</span><strong>@begripassen</strong></a>
       </div>
     </div>
   </div>

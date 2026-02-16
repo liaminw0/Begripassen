@@ -1,11 +1,17 @@
+:root {
+  --font-body: "Manrope", "Segoe UI", Arial, sans-serif;
+  --font-heading: "Sora", "Segoe UI", Arial, sans-serif;
+}
+
 * {
   margin: 0;
   padding: 0;
 }
 body {
   color: white;
-  font-family: arial, sans-serif, "Anton";
+  font-family: var(--font-body);
   display: flex;
+  line-height: 1.5;
 }
 
 main {
@@ -26,9 +32,38 @@ p, h1 {
 }
 
 p {
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: 0.01em;
 }
 
 li {
   list-style: none;
+}
+
+a, button, input, textarea, select {
+  font-family: var(--font-body);
+}
+
+.reveal-up {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.6s ease, transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.reveal-up.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-up {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 }

@@ -1,24 +1,60 @@
 {{ define "main" }}
 <main>
-  <div id="single-page">
-    <div class="single-section">
-      <div class="article-info">
-        <h1 id="title">{{ .Title }}</h1>
-        <h2>{{ .Param "author" }}</h2>
+  <div id="single-page" class="{{ if eq .Section "events" }}single-event{{ else if eq .Section "blogs" }}single-default single-blog{{ else }}single-default{{ end }}">
+    <div class="single-shell">
+      {{ if eq .Section "events" }}
+      <header class="single-hero-wrap has-hero-image">
+        <div class="single-hero">
+          <div class="single-hero-copy">
+            <p class="single-kicker">BEGR!P Event</p>
+            <h1 id="title">{{ .Title }}</h1>
+            <div class="single-meta-bar">
+              <div class="single-meta-item"><small class="meta-label">Locatie</small><strong class="meta-value">{{ with .Params.location }}{{ . }}{{ else }}Locatie volgt{{ end }}</strong></div>
+              <div class="single-meta-item"><small class="meta-label">Datum</small><strong class="meta-value">{{ dateFormat "2 January 2006" .Date }}</strong></div>
+              <div class="single-meta-item"><small class="meta-label">Tijd</small><strong class="meta-value">{{ if .Params.time }}{{ .Params.time }}{{ else if or (ne .Date.Hour 0) (ne .Date.Minute 0) }}{{ .Date.Format "15:04" }}{{ else }}Tijd volgt{{ end }}</strong></div>
+              <div class="single-meta-item"><small class="meta-label">Organisator</small><strong class="meta-value">{{ with .Params.organiser }}{{ . }}{{ else }}{{ with .Param "author" }}{{ . }}{{ else }}BEGR!P Team{{ end }}{{ end }}</strong></div>
+            </div>
+          </div>
+        </div>
+        <div class="single-hero-image">
+          <img src="{{ if .Params.image }}{{ .Params.image | relURL }}{{ else }}{{ "images/about.jpeg" | relURL }}{{ end }}" alt="{{ .Title }}">
+        </div>
+      </header>
+      {{ else }}
+      <header class="single-hero-wrap{{ if eq .Section "blogs" }} has-hero-image{{ end }}">
+        <div class="single-hero">
+          <div class="single-hero-copy">
+            <p class="single-kicker">BEGR!P Artikel</p>
+            <h1 id="title">{{ .Title }}</h1>
+            <div class="single-meta-bar">
+              <span>{{ dateFormat "2 January 2006" .Date }}</span>
+              {{ with .Param "author" }}<span>{{ . }}</span>{{ end }}
+              <span>{{ .WordCount }} woorden</span>
+            </div>
+          </div>
+        </div>
+        {{ if eq .Section "blogs" }}
+        <div class="single-hero-image">
+          <img src="{{ if .Params.image }}{{ .Params.image | relURL }}{{ else }}{{ "images/about.jpeg" | relURL }}{{ end }}" alt="{{ .Title }}">
+        </div>
+        {{ end }}
+      </header>
+      {{ end }}
+
+      <article class="single-content">
+        {{ .Content }}
+      </article>
+
+      <div class="single-actions">
+        {{ if eq .Section "events" }}
+        <a href="{{ "/events/" | relURL }}">Terug naar events</a>
+        {{ else }}
+        <a href="{{ printf "/%s/" .Section | relURL }}">Terug naar overzicht</a>
+        {{ end }}
+        <a href="{{ "/" | relURL }}#heading-container">Naar home</a>
       </div>
-    <article>
-      {{ .Content }}
-    </article>
-    <div class="meta">
-      <h3 id="date"> {{ dateFormat "January 2, 2006" .Date }} </h3>
-      <h4 id="wordcount"> {{ .WordCount }} Woorden</h4>
     </div>
   </div>
   {{- partial "footer.html" . -}}
-  </div>
 </main>
 {{ end }}
-
-
-
-

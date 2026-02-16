@@ -3,9 +3,9 @@
 }
 
 header {
-  background-color: white;
+  background-color: #f7fbf4;
   width: 170px;
-  font-family: "Anton";
+  font-family: var(--font-heading);
   z-index: 10;
 }
 
@@ -34,13 +34,15 @@ nav {
 }
 
 #nav li a {
-  color: #178baaff;
+  color: #1e5b0d;
   text-decoration: none;
 }
 
 #nav li p {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   visibility: hidden;
   opacity: 0;
   transition: visibility 0s, opacity 0.5s linear;
@@ -96,6 +98,6 @@ nav.navbar.is-active #burger {
 
   nav.is-active {
     left: 0;
-    background-color: white;
+    background-color: #f7fbf4;
   }
 }

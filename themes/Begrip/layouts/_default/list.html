@@ -1,38 +1,146 @@
 {{ define "main" }}
 <main>
-  <div id="list-page">
-  <div class="li-header">
-    <h1>{{ .Title }}</h1>
-  </div>
-  <div class="listpage-items">
-  {{ range .Pages }}
-  <li>
-    <a href="{{ .RelPermalink }}"><h3>{{ .Title }}</h3><h4>{{ .Date.Format "2006-01-02"  }}</h4></a>
-  </li>
-{{ end }}
-</div>
-<div id="footer-container">
-  <div class="section">
-    <div class="container-left">
-      <img src="/images/logo.svg" alt="logo">
-      <div class="socials">
-        <a href="https://www.instagram.com/begripassen/"><li><i class="fa-brands fa-instagram"></i></li></a>
-        <a href="mailto:contact@begripassen.nl"><li><i class="fa-solid fa-envelope"></i></li></a>
+  {{ if eq .Section "events" }}
+  {{ $upcoming := where .Pages "Date" "ge" now }}
+  {{ $past := where .Pages "Date" "lt" now }}
+  <div id="events-page">
+    <section class="section events-hero">
+      <div class="events-hero-copy">
+        <p class="events-kicker">BEGR!P Agenda</p>
+        <h1>{{ .Title }}</h1>
+        <p>Bekijk alle evenementen en activiteiten van BEGR!P op een plek.</p>
+        <a href="{{ "/" | relURL }}#heading-container" class="events-hero-link">Terug naar home</a>
       </div>
-    </div>
-    <div class="container-right">
-      <div class="footermenu">
-      <a href="#heading-container"><li><i class="fa-solid fa-house"></i><p>Home</p></li></a>
-      <a href="#about-container"><i class="fa-solid fa-circle-info"></i><p>Over Ons</p></a>
-      <a href="#blog-container"><i class="fa-solid fa-blog"></i><p>Blog</p></a></li>
-      <a href="#nieuwsbrief-container"><i class="fa-solid fa-envelope"></i><p>NieuwsBrief</p></a>
-      <a href="#contact-container"><i class="fa-solid fa-at"></i><p>Contact</p></a></li>
-      <a href="#steunons-container"><i class="fa-solid fa-handshake-angle"></i><p>Steun Ons!</p></a>
-    </div>
-    <p>Copyright 2024 Begr!p Assen</p>
-    </div>
+      <div class="events-hero-panel">
+        <h2>Overzicht</h2>
+        <p>{{ len $upcoming }} aankomend · {{ len $past }} voorbij</p>
+      </div>
+    </section>
+
+    <section class="section events-listing">
+      <div class="events-group">
+        <div class="events-group-head">
+          <h2>Aankomende Events</h2>
+          <p>{{ len $upcoming }}</p>
+        </div>
+        {{ if gt (len $upcoming) 0 }}
+        <ul class="listpage-items events-grid">
+        {{ range $upcoming.ByDate }}
+          <li class="event-item">
+            <a class="event-link" href="{{ .RelPermalink }}">
+              <div class="event-date">
+                <span class="event-date-day">{{ .Date.Format "02" }}</span>
+                <span class="event-date-month">{{ .Date.Format "Jan" }}</span>
+                <span class="event-date-year">{{ .Date.Format "2006" }}</span>
+              </div>
+              <div class="event-meta">
+                <h3>{{ .Title }}</h3>
+                <p class="event-full-date">{{ .Date.Format "2 January 2006" }}</p>
+                {{ with .Summary }}
+                <p class="event-summary">{{ . | plainify }}</p>
+                {{ end }}
+              </div>
+              <span class="event-cta">Bekijk</span>
+            </a>
+          </li>
+        {{ end }}
+        </ul>
+        {{ else }}
+        <p class="events-empty">Er zijn nu geen aankomende events.</p>
+        {{ end }}
+      </div>
+
+      <div class="events-group">
+        <div class="events-group-head">
+          <h2>Afgelopen Events</h2>
+          <p>{{ len $past }}</p>
+        </div>
+        {{ if gt (len $past) 0 }}
+        <ul class="listpage-items events-grid">
+        {{ range $past.ByDate.Reverse }}
+          <li class="event-item">
+            <a class="event-link" href="{{ .RelPermalink }}">
+              <div class="event-date">
+                <span class="event-date-day">{{ .Date.Format "02" }}</span>
+                <span class="event-date-month">{{ .Date.Format "Jan" }}</span>
+                <span class="event-date-year">{{ .Date.Format "2006" }}</span>
+              </div>
+              <div class="event-meta">
+                <h3>{{ .Title }}</h3>
+                <p class="event-full-date">{{ .Date.Format "2 January 2006" }}</p>
+                {{ with .Summary }}
+                <p class="event-summary">{{ . | plainify }}</p>
+                {{ end }}
+              </div>
+              <span class="event-cta">Bekijk</span>
+            </a>
+          </li>
+        {{ end }}
+        </ul>
+        {{ else }}
+        <p class="events-empty">Er zijn nog geen voorbije events om te tonen.</p>
+        {{ end }}
+      </div>
+    </section>
   </div>
-</div>
-</div>
+  {{ else if eq .Section "blogs" }}
+  <div id="blogs-page">
+    <section class="section blogs-hero">
+      <div class="blogs-hero-copy">
+        <p class="blogs-kicker">BEGR!P Nieuws</p>
+        <h1>{{ .Title }}</h1>
+        <p>Updates, verhalen en nieuws over wat er speelt bij BEGR!P.</p>
+        <a href="{{ "/" | relURL }}#blog-container" class="blogs-hero-link">Terug naar home</a>
+      </div>
+      <div class="blogs-hero-panel">
+        <h2>Overzicht</h2>
+        <p>{{ len .Pages }} blogs</p>
+      </div>
+    </section>
+
+    <section class="section blogs-listing">
+      {{ if gt (len .Pages) 0 }}
+      <ul class="listpage-items blogs-grid">
+      {{ range .Pages.ByDate.Reverse }}
+        <li class="blog-item">
+          <a class="blog-link" href="{{ .RelPermalink }}">
+            <div class="blog-top">
+              <p class="blog-date">{{ .Date.Format "2 January 2006" }}</p>
+              {{ with .Param "author" }}<p class="blog-author">{{ . }}</p>{{ end }}
+            </div>
+            <h3>{{ .Title }}</h3>
+            {{ with .Summary }}
+            <p class="blog-summary">{{ . | plainify }}</p>
+            {{ else }}
+            <p class="blog-summary">{{ .Plain | truncate 170 }}</p>
+            {{ end }}
+            <span class="blog-cta">Lees artikel</span>
+          </a>
+        </li>
+      {{ end }}
+      </ul>
+      {{ else }}
+      <p class="blogs-empty">Er zijn nog geen blogs om te tonen.</p>
+      {{ end }}
+    </section>
+  </div>
+  {{ else }}
+  <div id="list-page">
+    <div class="li-header section">
+      <h1>{{ .Title }}</h1>
+    </div>
+    <ul class="listpage-items section">
+      {{ range .Pages.ByDate.Reverse }}
+      <li>
+        <a href="{{ .RelPermalink }}">
+          <h3>{{ .Title }}</h3>
+          <h4>{{ .Date.Format "2006-01-02" }}</h4>
+        </a>
+      </li>
+      {{ end }}
+    </ul>
+  </div>
+  {{ end }}
+  {{- partial "footer.html" . -}}
 </main>
 {{ end }}

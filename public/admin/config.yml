@@ -15,6 +15,7 @@ collections:
       - { label: 'Title', name: 'title', widget: 'string' }
       - { label: 'Publish Date', name: 'date', widget: 'datetime' }
       - { label: 'Author', name: 'author', widget: 'string' }
+      - { label: 'Blog Cover Image', name: 'image', widget: 'image', required: false }
       - { label: 'Body', name: 'body', widget: 'markdown' }
   - name: 'events'
     label: 'Events'
@@ -26,23 +27,27 @@ collections:
     fields:
       - { label: 'Title', name: 'title', widget: 'string' }
       - { label: 'Publish Date', name: 'date', widget: 'datetime' }
+      - { label: 'Location', name: 'location', widget: 'string', required: false }
+      - { label: 'Time', name: 'time', widget: 'string', required: false }
+      - { label: 'Organiser', name: 'organiser', widget: 'string', required: false }
       - { label: 'Author', name: 'author', widget: 'string' }
+      - { label: 'Event Image', name: 'image', widget: 'image', required: false }
       - { label: 'Body', name: 'body', widget: 'markdown' }
       - { label: 'Publish Date', name: 'publishdate', widget: 'hidden', default: '2023-03-18' }
-  - name: "homepage"                    # Name of the collection
-    label: "Homepage"                    # Label displayed in the CMS
+  - name: "TekstModule"                    # Name of the collection
+    label: "TekstModule"                    # Label displayed in the CMS
     files:                              # Specify individual files to edit
     - file: "content/_index.md"        # Path to the _index.md file
-      label: "Homepage Content"        # Label for the _index.md file
+      label: "TekstModule Home Pagina"        # Label for the _index.md file
       name: "homepage"                                # Slug for the index file
       fields:
-        - { label: "Title", name: "Title", widget: "string" }
-        - { label: "Heading", name: "Heading", widget: "text" }
-        - { label: "About", name: "About", widget: "markdown" }
-        - { label: "Blog", name: "Blog", widget: "markdown" }
-        - { label: "Newsletter", name: "Newsletter", widget: "markdown" }
-        - { label: "Contact", name: "Contact", widget: "markdown" }
-        - { label: "Support", name: "Support", widget: "markdown" }
+        - { label: "Slogan", name: "Heading", widget: "text", minimal: true }  # Multi-line plain text
+        - { label: "Over ons", name: "About", widget: "text", minimal: true }      # Multi-line plain text
+        - { label: "Blog Beschrijving", name: "Blog", widget: "text", minimal: true }        # Multi-line plain text
+        - { label: "Nieuwsletter Beschrijving", name: "Newsletter", widget: "text", minimal: true }  # Multi-line plain text
+        - { label: "Contact Beschrijving", name: "Contact", widget: "text", minimal: true }  # Multi-line plain text
+        - { label: "Ondersteun ons Beschrijving", name: "Support", widget: "text", minimal: true }  # Multi-line plain text
+
 # - name: "test"            # The name of the collection
 #   label: "Test"           # Label in the CMS UI
 #   folder: "content/test"  # Folder where blog posts will be stored
