@@ -1,8 +1,6 @@
 backend:
-  name: netlify-git-gateway
+  name: git-gateway
   branch: main
-
-local_backend: true
 
 site_url: https://begripassen.nl
 display_url: https://begripassen.nl
@@ -10,6 +8,8 @@ logo_url: /images/logo.svg
 
 media_folder: static/images/uploads
 public_folder: /images/uploads
+
+publish_mode: editorial_workflow
 
 slug:
   encoding: ascii
