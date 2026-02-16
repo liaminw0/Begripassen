@@ -8,8 +8,3 @@
   HUGO_EXTENDED = "true"
   HUGO_ENV = "production"
   HUGO_ENABLEGITINFO = "true"
-
-[[redirects]]
-  from = "/admin"
-  to = "/admin/"
-  status = 301

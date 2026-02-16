@@ -23,10 +23,6 @@
         window.netlifyIdentity.on("error", function (err) {
           console.error("Netlify Identity error:", err);
         });
-
-        if (window.location.hash.includes("invite_token")) {
-          window.netlifyIdentity.open("signup");
-        }
       }
     </script>
   </body>
