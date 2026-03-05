@@ -27,32 +27,24 @@ collections:
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
     summary: "{{title}} - {{date}}"
     fields:
-      - label: Titel
+      - label: Naam evenement
         name: title
         widget: string
-      - label: Datum en tijd
+      - label: Tijd
         name: date
         widget: datetime
         date_format: YYYY-MM-DD
         time_format: HH:mm
         format: YYYY-MM-DDTHH:mm:ssZ
-      - label: Organisator
-        name: organiser
-        widget: string
-        required: false
-      - label: Auteur (fallback)
-        name: author
-        widget: string
-        required: false
       - label: Locatie
         name: location
         widget: string
         required: false
-      - label: Tijd (overschrijft datumtijd)
-        name: time
+      - label: Organisator
+        name: organiser
         widget: string
         required: false
-      - label: Coverafbeelding
+      - label: Omslagafbeelding
         name: image
         widget: image
         required: false
@@ -61,7 +53,7 @@ collections:
         widget: boolean
         default: false
         required: false
-      - label: Aanmeldknop URL
+      - label: Aanmeldlink
         name: signup_link
         widget: string
         required: false
@@ -92,7 +84,7 @@ collections:
         name: author
         widget: string
         required: false
-      - label: Uitgelichte afbeelding
+      - label: Omslagafbeelding
         name: image
         widget: image
         required: false
