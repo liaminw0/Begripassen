@@ -20,4 +20,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    (function () {
+      var hash = window.location.hash || "";
+      var hasIdentityToken =
+        hash.indexOf("invite_token=") !== -1 ||
+        hash.indexOf("recovery_token=") !== -1 ||
+        hash.indexOf("confirmation_token=") !== -1;
+      var onAdminPath = window.location.pathname.indexOf("/admin") === 0;
+
+      if (hasIdentityToken && !onAdminPath) {
+        window.location.replace("/admin/" + hash);
+      }
+    })();
+  </script>
 </head>
