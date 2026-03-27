@@ -281,19 +281,10 @@ function buildFieldMarkup(field, value = "") {
   if (field.type === "markdown") {
     const rows = field.rows || 12;
     const isBlogBody = state.activeView === "blogs" && field.name === "body";
-    if (isBlogBody) {
-      return `
-        <div class="field-block toast-field">
-          <span class="field-label">${field.label}</span>
-          <div class="toast-host" data-toast-editor="body"></div>
-          <textarea name="${field.name}" rows="${rows}" ${field.required ? "required" : ""}>${escapeHtml(value)}</textarea>
-        </div>
-      `;
-    }
-
     return `
-      <label>
+      <label${isBlogBody ? ' class="toast-field"' : ""}>
         ${field.label}
+        ${isBlogBody ? '<div class="toast-host" data-toast-editor="body"></div>' : ""}
         <textarea name="${field.name}" rows="${rows}" ${field.required ? "required" : ""}>${escapeHtml(value)}</textarea>
       </label>
     `;
