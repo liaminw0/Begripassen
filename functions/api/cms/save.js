@@ -10,6 +10,7 @@ import {
   normalizeFields,
   requireAuth,
   serializeMarkdownFile,
+  serializeTomlMarkdownFile,
 } from "./_lib";
 
 export async function onRequestPost(context) {
@@ -79,7 +80,7 @@ export async function onRequestPost(context) {
     }
 
     const fields = normalizeFields(type, rawFields);
-    const markdown = serializeMarkdownFile(fields, body);
+    const markdown = type === "home" ? serializeTomlMarkdownFile(fields, body) : serializeMarkdownFile(fields, body);
     const singular = type.endsWith("s") ? type.slice(0, -1) : type;
     const actionLabel = payload.path ? "Update" : "Create";
     const commitTitle = fields.title || "homepage copy";

@@ -413,21 +413,26 @@ function parseFrontmatterValue(rawValue) {
 export function parseMarkdownFile(markdown) {
   const normalized = markdown.replace(/\r\n/g, "\n");
 
-  if (!normalized.startsWith("---\n")) {
+  const isYaml = normalized.startsWith("---\n");
+  const isToml = normalized.startsWith("+++\n");
+
+  if (!isYaml && !isToml) {
     return { fields: {}, body: normalized.trim() };
   }
 
-  const endIndex = normalized.indexOf("\n---\n", 4);
+  const delimiter = isToml ? "+++" : "---";
+  const separator = `\n${delimiter}\n`;
+  const endIndex = normalized.indexOf(separator, 4);
   if (endIndex === -1) {
     return { fields: {}, body: normalized.trim() };
   }
 
   const rawFrontmatter = normalized.slice(4, endIndex);
-  const body = normalized.slice(endIndex + 5).trim();
+  const body = normalized.slice(endIndex + separator.length).trim();
   const fields = {};
 
   for (const line of rawFrontmatter.split("\n")) {
-    const divider = line.indexOf(":");
+    const divider = isToml ? line.indexOf("=") : line.indexOf(":");
     if (divider === -1) {
       continue;
     }
@@ -472,6 +477,15 @@ export function serializeMarkdownFile(fields, body) {
 
   const normalizedBody = (body || "").replace(/\r\n/g, "\n").trim();
   return `---\n${frontmatterLines.join("\n")}\n---\n${normalizedBody}\n`;
+}
+
+export function serializeTomlMarkdownFile(fields, body) {
+  const frontmatterLines = Object.entries(fields)
+    .filter(([, value]) => value !== "" && value !== null && value !== undefined)
+    .map(([key, value]) => `${key} = ${JSON.stringify(typeof value === "boolean" ? value : String(value))}`);
+
+  const normalizedBody = (body || "").replace(/\r\n/g, "\n").trim();
+  return `+++\n${frontmatterLines.join("\n")}\n+++\n${normalizedBody}\n`;
 }
 
 export function slugify(value) {
