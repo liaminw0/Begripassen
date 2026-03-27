@@ -45,13 +45,13 @@ const viewConfig = {
       { name: "newsletter", label: "Nieuwsbrief intro", type: "textarea", rows: 4, required: true, group: "newsletter" },
       { name: "support", label: "Steun ons intro", type: "textarea", rows: 4, required: true, group: "support" },
       { name: "contact", label: "Contact intro", type: "textarea", rows: 4, required: true, group: "contact" },
-      { name: "contact_phone_label", label: "Telefoon label", type: "text", layout: "third", group: "contact" },
-      { name: "contact_phone", label: "Telefoonnummer", type: "text", layout: "third", group: "contact" },
-      { name: "contact_email_label", label: "E-mail label", type: "text", layout: "third", group: "contact" },
-      { name: "contact_email", label: "E-mailadres", type: "text", layout: "third", group: "contact" },
-      { name: "contact_instagram_label", label: "Instagram label", type: "text", layout: "third", group: "contact" },
-      { name: "contact_instagram_handle", label: "Instagram naam", type: "text", layout: "third", group: "contact" },
-      { name: "contact_instagram_url", label: "Instagram link", type: "url", layout: "third", group: "contact" },
+      { name: "contact_phone_label", label: "Telefoon label", type: "text", layout: "third", rowGroup: "contact-phone", group: "contact" },
+      { name: "contact_phone", label: "Telefoonnummer", type: "text", layout: "third", rowGroup: "contact-phone", group: "contact" },
+      { name: "contact_email_label", label: "E-mail label", type: "text", layout: "third", rowGroup: "contact-email", group: "contact" },
+      { name: "contact_email", label: "E-mailadres", type: "text", layout: "third", rowGroup: "contact-email", group: "contact" },
+      { name: "contact_instagram_label", label: "Instagram label", type: "text", layout: "third", rowGroup: "contact-instagram", group: "contact" },
+      { name: "contact_instagram_handle", label: "Instagram naam", type: "text", layout: "third", rowGroup: "contact-instagram", group: "contact" },
+      { name: "contact_instagram_url", label: "Instagram link", type: "url", layout: "third", rowGroup: "contact-instagram", group: "contact" },
     ],
   },
 };
@@ -265,10 +265,15 @@ function buildFieldMarkup(field, value = "") {
   }
 
   if (field.type === "image") {
+    const previewMarkup = value
+      ? `<div class="image-preview" data-image-preview="${field.name}"><img src="${escapeHtml(value)}" alt="${escapeHtml(field.label)}" loading="lazy" /></div>`
+      : `<div class="image-preview hidden" data-image-preview="${field.name}"><img src="" alt="${escapeHtml(field.label)}" loading="lazy" /></div>`;
+
     return `
       <label data-image-field="${field.name}" data-field-wrapper="${field.name}">
         ${field.label}
         <input type="text" name="${field.name}" value="${escapeHtml(value)}" placeholder="/images/uploads/voorbeeld.jpg" />
+        ${previewMarkup}
         <div class="upload-row">
           <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-upload-input="${field.name}" class="hidden-upload-input" />
           <button type="button" class="secondary" data-upload-button="${field.name}">Kies en upload afbeelding</button>
@@ -320,6 +325,7 @@ function renderFieldRows(fields, item) {
   const gridMarkup = [];
   let currentRow = [];
   let currentLayout = "pair";
+  let currentRowGroup = "";
 
   const flushCurrentRow = () => {
     if (!currentRow.length) {
@@ -335,17 +341,20 @@ function renderFieldRows(fields, item) {
     const markup = buildFieldMarkup(field, fieldValue);
     const isBlockField = field.type === "textarea" || field.type === "markdown" || field.type === "image" || field.type === "checkbox";
     const layout = field.layout || "pair";
+    const rowGroup = field.rowGroup || "";
 
     if (isBlockField) {
       flushCurrentRow();
       gridMarkup.push(markup);
       currentLayout = "pair";
+      currentRowGroup = "";
     } else {
-      if (currentRow.length && currentLayout !== layout) {
+      if (currentRow.length && (currentLayout !== layout || (currentRowGroup && currentRowGroup !== rowGroup))) {
         flushCurrentRow();
       }
 
       currentLayout = layout;
+      currentRowGroup = rowGroup;
       currentRow.push(markup);
       const maxColumns = layout === "third" ? 3 : 2;
 
@@ -402,6 +411,22 @@ function renderEditor(item = null) {
     const fieldName = button.dataset.uploadButton;
     const fileInput = elements.editorFields.querySelector(`[data-upload-input="${fieldName}"]`);
     const targetInput = elements.editorFields.querySelector(`input[name="${fieldName}"]`);
+    const preview = elements.editorFields.querySelector(`[data-image-preview="${fieldName}"]`);
+    const previewImage = preview?.querySelector("img");
+
+    const syncImagePreview = (value) => {
+      if (!preview || !previewImage) {
+        return;
+      }
+
+      const hasValue = Boolean(String(value || "").trim());
+      preview.classList.toggle("hidden", !hasValue);
+      previewImage.src = hasValue ? value : "";
+    };
+
+    targetInput?.addEventListener("input", () => {
+      syncImagePreview(targetInput.value);
+    });
 
     button.addEventListener("click", () => {
       fileInput.click();
@@ -428,6 +453,7 @@ function renderEditor(item = null) {
           }),
         });
         targetInput.value = payload.path;
+        syncImagePreview(payload.path);
         setMessage("Afbeelding geüpload als WebP en ingevuld.", "success");
       } catch (err) {
         setMessage(err.message, "error");

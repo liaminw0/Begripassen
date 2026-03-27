@@ -381,6 +381,20 @@ textarea {
   font-size: 0.9rem;
 }
 
+.image-preview {
+  overflow: hidden;
+  border: 1px solid rgba(30, 91, 13, 0.14);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.image-preview img {
+  display: block;
+  width: 100%;
+  max-height: 260px;
+  object-fit: cover;
+}
+
 .upload-row {
   display: flex;
   gap: 0.75rem;
