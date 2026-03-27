@@ -1,7 +1,6 @@
 {{ define "main" }}
 <main>
-  {{ $defaultImage := "images/about.jpeg" | relURL }}
-  {{ $heroImage := $defaultImage }}
+  {{ $heroImage := "" }}
   {{ with .Params.image }}
     {{ if hasPrefix . "/" }}
       {{ $heroImage = . | relURL }}
@@ -14,7 +13,7 @@
   <div id="single-page" class="{{ if eq .Section "events" }}single-event{{ else if eq .Section "blogs" }}single-default single-blog{{ else }}single-default{{ end }}">
     <div class="single-shell">
       {{ if eq .Section "events" }}
-      <header class="single-hero-wrap has-hero-image">
+      <header class="single-hero-wrap{{ if $heroImage }} has-hero-image{{ end }}">
         <div class="single-hero">
           <div class="single-hero-copy">
             <p class="single-kicker">BEGR!P Event</p>
@@ -27,12 +26,14 @@
             </div>
           </div>
         </div>
+        {{ if $heroImage }}
         <div class="single-hero-image">
           <img src="{{ $heroImage }}" alt="{{ .Title }}">
         </div>
+        {{ end }}
       </header>
       {{ else }}
-      <header class="single-hero-wrap{{ if eq .Section "blogs" }} has-hero-image{{ end }}">
+      <header class="single-hero-wrap{{ if and (eq .Section "blogs") $heroImage }} has-hero-image{{ end }}">
         <div class="single-hero">
           <div class="single-hero-copy">
             <p class="single-kicker">BEGR!P Artikel</p>
@@ -44,7 +45,7 @@
             </div>
           </div>
         </div>
-        {{ if eq .Section "blogs" }}
+        {{ if and (eq .Section "blogs") $heroImage }}
         <div class="single-hero-image">
           <img src="{{ $heroImage }}" alt="{{ .Title }}">
         </div>
