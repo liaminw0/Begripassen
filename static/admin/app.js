@@ -31,10 +31,10 @@ const viewConfig = {
     ],
   },
   home: {
-    eyebrow: "Homepage",
-    title: "Homepage copy bijwerken",
-    listTitle: "Homepage",
-    buttonLabel: "Homepage laden",
+    eyebrow: "Homepagina",
+    title: "Homepagina bijwerken",
+    listTitle: "Homepagina",
+    buttonLabel: "Homepagina openen",
     fields: [
       { name: "title", label: "Titel", type: "text", required: true },
       { name: "heading", label: "Hoofdtekst", type: "textarea", rows: 4, required: true },
@@ -66,6 +66,8 @@ const elements = {
   loginError: document.getElementById("login-error"),
   logoutButton: document.getElementById("logout-button"),
   nav: document.getElementById("cms-nav"),
+  sidebarTitle: document.getElementById("sidebar-title"),
+  sidebarCopy: document.getElementById("sidebar-copy"),
   dashboardGrid: document.getElementById("dashboard-grid"),
   listCard: document.getElementById("list-card"),
   contentList: document.getElementById("content-list"),
@@ -96,6 +98,17 @@ function setLoginError(message) {
   elements.loginError.textContent = message || "";
 }
 
+function updateSidebarCopy() {
+  if (state.authenticated) {
+    elements.sidebarTitle.textContent = "Inhoud beheren";
+    elements.sidebarCopy.textContent = "Maak nieuwe events en blogposts, werk homepage-teksten bij en upload beelden zonder losse markdownbestanden te openen.";
+    return;
+  }
+
+  elements.sidebarTitle.textContent = "Teamomgeving";
+  elements.sidebarCopy.textContent = "Log in om de website van BEGR!P bij te werken en nieuwe inhoud te publiceren.";
+}
+
 function setEditorMode(mode) {
   state.editorMode = mode;
   const showForm = mode === "editing";
@@ -114,11 +127,11 @@ function showEmptyEditorState() {
   elements.editorEmptyEyebrow.textContent = config.eyebrow;
 
   if (state.activeView === "home") {
-    elements.editorEmptyTitle.textContent = "Homepage wordt geladen";
-    elements.editorEmptyCopy.textContent = "De homepage heeft geen losse lijstweergave nodig en opent direct in de editor.";
+    elements.editorEmptyTitle.textContent = "Homepagina wordt geladen";
+    elements.editorEmptyCopy.textContent = "De homepagina heeft geen losse lijstweergave nodig en opent direct in de editor.";
   } else {
     elements.editorEmptyTitle.textContent = "Kies eerst een item";
-    elements.editorEmptyCopy.textContent = `Selecteer links een bestaand ${state.activeView === "events" ? "event" : "blogartikel"} of klik op "${config.buttonLabel}" om een nieuw item te openen.`;
+    elements.editorEmptyCopy.textContent = `Selecteer links een bestaand ${state.activeView === "events" ? "evenement" : "blogartikel"} of klik op "${config.buttonLabel}" om een nieuw item te openen.`;
   }
 }
 
@@ -186,7 +199,7 @@ function escapeHtml(value) {
 function buildFieldMarkup(field, value = "") {
   if (field.type === "checkbox") {
     return `
-      <label class="checkbox-field">
+      <label class="checkbox-field" data-field-wrapper="${field.name}">
         <input type="checkbox" name="${field.name}" ${value ? "checked" : ""} />
         <span>${field.label}</span>
       </label>
@@ -205,7 +218,7 @@ function buildFieldMarkup(field, value = "") {
 
   if (field.type === "image") {
     return `
-      <label data-image-field="${field.name}">
+      <label data-image-field="${field.name}" data-field-wrapper="${field.name}">
         ${field.label}
         <input type="text" name="${field.name}" value="${escapeHtml(value)}" placeholder="/images/uploads/voorbeeld.jpg" />
         <div class="upload-row">
@@ -220,11 +233,39 @@ function buildFieldMarkup(field, value = "") {
     field.type === "datetime-local" ? toInputDateTime(value) : field.type === "date" ? toInputDate(value) : value;
 
   return `
-    <label>
+    <label data-field-wrapper="${field.name}">
       ${field.label}
       <input type="${field.type}" name="${field.name}" value="${escapeHtml(normalizedValue)}" ${field.required ? "required" : ""} />
     </label>
     `;
+}
+
+function applyFieldVisibilityRules() {
+  if (state.activeView !== "events") {
+    return;
+  }
+
+  const signupToggle = elements.editorFields.querySelector('input[name="show_signup"]');
+  const signupLinkWrapper = elements.editorFields.querySelector('[data-field-wrapper="signup_link"]');
+
+  if (!signupToggle || !signupLinkWrapper) {
+    return;
+  }
+
+  const updateSignupLinkVisibility = () => {
+    const visible = signupToggle.checked;
+    signupLinkWrapper.classList.toggle("hidden", !visible);
+
+    if (!visible) {
+      const signupLinkInput = signupLinkWrapper.querySelector('input[name="signup_link"]');
+      if (signupLinkInput) {
+        signupLinkInput.value = "";
+      }
+    }
+  };
+
+  signupToggle.addEventListener("change", updateSignupLinkVisibility);
+  updateSignupLinkVisibility();
 }
 
 function renderEditor(item = null) {
@@ -302,6 +343,8 @@ function renderEditor(item = null) {
       }
     });
   }
+
+  applyFieldVisibilityRules();
 }
 
 function fileToBase64(file) {
@@ -401,6 +444,7 @@ function renderList() {
 async function loadSession() {
   const payload = await api("/api/cms/session", { method: "GET", headers: {} });
   state.authenticated = payload.authenticated;
+  updateSidebarCopy();
   elements.loginPanel.classList.toggle("hidden", state.authenticated);
   elements.dashboardPanel.classList.toggle("hidden", !state.authenticated);
   elements.logoutButton.classList.toggle("hidden", !state.authenticated);
@@ -504,7 +548,7 @@ function formatListMeta(item) {
     parts.push(formattedDate);
   }
 
-  parts.push(item.draft ? "concept" : "live");
+  parts.push(item.draft ? "concept" : "gepubliceerd");
   return parts.join(" · ");
 }
 
@@ -527,6 +571,7 @@ elements.loginForm.addEventListener("submit", async (event) => {
 elements.logoutButton.addEventListener("click", async () => {
   await api("/api/cms/logout", { method: "POST", body: "{}" });
   state.authenticated = false;
+  updateSidebarCopy();
   elements.loginPanel.classList.remove("hidden");
   elements.dashboardPanel.classList.add("hidden");
   elements.logoutButton.classList.add("hidden");
@@ -548,7 +593,7 @@ elements.newItemButton.addEventListener("click", async () => {
     return;
   }
   renderEditor();
-  setMessage(`Nieuw ${state.activeView === "events" ? "event" : "blogartikel"} geopend.`, "");
+  setMessage(`Nieuw ${state.activeView === "events" ? "evenement" : "blogartikel"} geopend.`, "");
 });
 
 elements.refreshButton.addEventListener("click", async () => {

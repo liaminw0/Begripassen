@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>BEGR!P Admin</title>
+    <title>BEGR!P Beheer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -17,14 +17,14 @@
       <aside class="cms-sidebar">
         <a class="cms-brand" href="/">
           <span class="cms-brand-mark">BEGR!P</span>
-          <span class="cms-brand-copy">Team CMS</span>
+          <span class="cms-brand-copy">Beheeromgeving</span>
         </a>
         <div class="cms-sidebar-copy">
-          <h1>Teamomgeving</h1>
-          <p>Log in om de website van BEGR!P bij te werken en nieuwe inhoud te publiceren.</p>
+          <h1 id="sidebar-title">Teamomgeving</h1>
+          <p id="sidebar-copy">Log in om de website van BEGR!P bij te werken en nieuwe inhoud te publiceren.</p>
         </div>
         <nav class="cms-nav hidden" id="cms-nav">
-          <button type="button" data-view="home" class="is-active">Homepage</button>
+          <button type="button" data-view="home" class="is-active">Homepagina</button>
           <button type="button" data-view="events">Events</button>
           <button type="button" data-view="blogs">Blogs</button>
         </nav>
@@ -36,7 +36,7 @@
       <main class="cms-main">
         <section id="login-panel" class="panel panel-login">
           <div class="login-card">
-            <p class="eyebrow">BEGR!P Admin</p>
+            <p class="eyebrow">BEGR!P Beheer</p>
             <h2>Log in om verder te gaan</h2>
             <p>Gebruik het teamwachtwoord om de website te beheren.</p>
             <form id="login-form">
@@ -53,8 +53,8 @@
         <section id="dashboard-panel" class="panel hidden">
           <header class="panel-header">
             <div>
-              <p class="eyebrow" id="view-eyebrow">Events</p>
-              <h2 id="view-title">Nieuwe items publiceren</h2>
+              <p class="eyebrow" id="view-eyebrow">Homepagina</p>
+              <h2 id="view-title">Homepagina bijwerken</h2>
             </div>
             <button id="new-item-button" type="button">Nieuw item</button>
           </header>
