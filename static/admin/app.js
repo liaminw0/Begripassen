@@ -272,7 +272,7 @@ function buildFieldMarkup(field, value = "") {
     return `
       <label data-image-field="${field.name}" data-field-wrapper="${field.name}">
         ${field.label}
-        <input type="text" name="${field.name}" value="${escapeHtml(value)}" placeholder="/images/uploads/voorbeeld.jpg" />
+        <input type="hidden" name="${field.name}" value="${escapeHtml(value)}" />
         ${previewMarkup}
         <div class="upload-row">
           <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-upload-input="${field.name}" class="hidden-upload-input" />
