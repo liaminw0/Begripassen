@@ -53,6 +53,7 @@ const state = {
   activeView: "events",
   authenticated: false,
   currentItem: null,
+  editorMode: "empty",
   lists: {
     events: [],
     blogs: [],
@@ -67,6 +68,10 @@ const elements = {
   loginError: document.getElementById("login-error"),
   logoutButton: document.getElementById("logout-button"),
   contentList: document.getElementById("content-list"),
+  editorEmpty: document.getElementById("editor-empty"),
+  editorEmptyEyebrow: document.getElementById("editor-empty-eyebrow"),
+  editorEmptyTitle: document.getElementById("editor-empty-title"),
+  editorEmptyCopy: document.getElementById("editor-empty-copy"),
   editorForm: document.getElementById("editor-form"),
   editorFields: document.getElementById("editor-fields"),
   editorMeta: document.getElementById("editor-meta"),
@@ -88,6 +93,31 @@ function setMessage(message, tone = "") {
 
 function setLoginError(message) {
   elements.loginError.textContent = message || "";
+}
+
+function setEditorMode(mode) {
+  state.editorMode = mode;
+  const showForm = mode === "editing";
+  elements.editorEmpty.classList.toggle("hidden", showForm);
+  elements.editorForm.classList.toggle("hidden", !showForm);
+}
+
+function showEmptyEditorState() {
+  const config = viewConfig[state.activeView];
+  state.currentItem = null;
+  setEditorMode("empty");
+  elements.editorFields.innerHTML = "";
+  elements.editorMeta.innerHTML = "";
+  elements.editorMeta.classList.add("hidden");
+  elements.editorEmptyEyebrow.textContent = config.eyebrow;
+
+  if (state.activeView === "home") {
+    elements.editorEmptyTitle.textContent = "Open de homepage-editor";
+    elements.editorEmptyCopy.textContent = "Klik links op de homepagekaart om de teksten te openen en daarna op te slaan.";
+  } else {
+    elements.editorEmptyTitle.textContent = "Kies eerst een item";
+    elements.editorEmptyCopy.textContent = `Selecteer links een bestaand ${state.activeView === "events" ? "event" : "blogartikel"} of klik op "${config.buttonLabel}" om een nieuw item te openen.`;
+  }
 }
 
 async function api(path, options = {}) {
@@ -197,6 +227,7 @@ function buildFieldMarkup(field, value = "") {
 
 function renderEditor(item = null) {
   state.currentItem = item;
+  setEditorMode("editing");
   const config = viewConfig[state.activeView];
   const fieldsMarkup = config.fields.map((field) => {
     const fieldValue = field.name === "body" ? item?.body || "" : item?.fields?.[field.name] || "";
@@ -322,18 +353,15 @@ async function loadSession() {
 }
 
 async function refreshActiveView() {
-  renderEditor();
+  showEmptyEditorState();
   setMessage("");
   renderList();
 
-  if (state.activeView === "home") {
-    await loadHome();
-    return;
+  if (state.activeView !== "home") {
+    const payload = await api(`/api/cms/items?type=${state.activeView}`, { method: "GET", headers: {} });
+    state.lists[state.activeView] = payload.items;
+    renderList();
   }
-
-  const payload = await api(`/api/cms/items?type=${state.activeView}`, { method: "GET", headers: {} });
-  state.lists[state.activeView] = payload.items;
-  renderList();
 }
 
 async function loadItem(path) {
@@ -423,6 +451,7 @@ elements.newItemButton.addEventListener("click", async () => {
     return;
   }
   renderEditor();
+  setMessage(`Nieuw ${state.activeView === "events" ? "event" : "blogartikel"} geopend.`, "");
 });
 
 elements.refreshButton.addEventListener("click", async () => {
@@ -430,7 +459,8 @@ elements.refreshButton.addEventListener("click", async () => {
 });
 
 elements.resetButton.addEventListener("click", () => {
-  renderEditor();
+  showEmptyEditorState();
+  setMessage("");
 });
 
 elements.editorForm.addEventListener("submit", async (event) => {
