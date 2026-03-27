@@ -94,6 +94,7 @@ const state = {
   editorInstance: null,
   pendingEditorImages: [],
   pendingFieldImages: {},
+  recentUploadedAssetPreviews: {},
   lists: {
     events: [],
     blogs: [],
@@ -150,7 +151,8 @@ function resolveImagePreviewUrl(rawValue, itemPath = "") {
   }
 
   const publicBase = `/${trimSlashes(itemPath.replace(/^content\//, "").replace(/\/index\.md$/, ""))}/`;
-  return `${publicBase}${trimSlashes(value)}`;
+  const resolvedUrl = `${publicBase}${trimSlashes(value)}`;
+  return state.recentUploadedAssetPreviews[resolvedUrl] || resolvedUrl;
 }
 
 function getItemPublicBase(itemPath = "") {
@@ -166,11 +168,6 @@ function escapeRegExp(value) {
 }
 
 function expandEditorBodyAssetUrls(markdown, itemPath = "") {
-  const publicBase = getItemPublicBase(itemPath);
-  if (!publicBase) {
-    return markdown;
-  }
-
   return String(markdown || "")
     .replace(/(!\[[^\]]*]\()([^)\s]+)(\))/g, (match, before, url, after) => {
       return `${before}${resolveImagePreviewUrl(url, itemPath)}${after}`;
@@ -200,6 +197,15 @@ function collapseEditorBodyAssetUrls(markdown, itemPath = "") {
     .replace(/(<img\b[^>]*\bsrc=["'])([^"']+)(["'][^>]*>)/gi, (match, before, url, after) => {
       return `${before}${replacer(url)}${after}`;
     });
+}
+
+function rememberUploadedAssetPreview(contentPath, relativePath, objectUrl) {
+  const resolvedUrl = resolveImagePreviewUrl(relativePath, contentPath);
+  if (!resolvedUrl || !objectUrl || resolvedUrl === objectUrl) {
+    return;
+  }
+
+  state.recentUploadedAssetPreviews[resolvedUrl] = objectUrl;
 }
 
 function setMessage(message, tone = "") {
@@ -875,12 +881,10 @@ async function processPendingFieldImages(payload) {
       filename: pendingImage.file.name,
       mimeType: pendingImage.file.type,
       base64,
+      previewObjectUrl: pendingImage.objectUrl,
     });
     fields[pendingImage.fieldName] = token;
 
-    if (pendingImage.objectUrl) {
-      URL.revokeObjectURL(pendingImage.objectUrl);
-    }
     delete state.pendingFieldImages[pendingImage.fieldName];
   }
 
@@ -912,12 +916,10 @@ async function processPendingEditorImages(payload) {
       filename: pendingImage.file.name,
       mimeType: pendingImage.file.type,
       base64,
+      previewObjectUrl: pendingImage.objectUrl,
     });
     body = body.split(pendingImage.objectUrl).join(token);
 
-    if (pendingImage.objectUrl) {
-      URL.revokeObjectURL(pendingImage.objectUrl);
-    }
   }
 
   state.pendingEditorImages = remainingImages;
@@ -1068,6 +1070,29 @@ elements.editorForm.addEventListener("submit", async (event) => {
     });
 
     setMessage("Opgeslagen. Vergeet niet dat Cloudflare Pages daarna opnieuw moet deployen.", "success");
+
+    if (response.uploadedAssets && response.path) {
+      for (const pendingImage of Object.values(state.pendingFieldImages)) {
+        if (pendingImage?.objectUrl) {
+          URL.revokeObjectURL(pendingImage.objectUrl);
+        }
+      }
+
+      for (const pendingImage of state.pendingEditorImages) {
+        if (pendingImage?.objectUrl) {
+          URL.revokeObjectURL(pendingImage.objectUrl);
+        }
+      }
+
+      for (const upload of payload.uploads || []) {
+        if (upload.token && upload.previewObjectUrl && response.uploadedAssets[upload.token]) {
+          rememberUploadedAssetPreview(response.path, response.uploadedAssets[upload.token], upload.previewObjectUrl);
+        }
+      }
+    }
+
+    state.pendingFieldImages = {};
+    state.pendingEditorImages = [];
 
     if (state.activeView === "home") {
       await loadHome();

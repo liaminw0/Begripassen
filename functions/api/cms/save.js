@@ -95,6 +95,7 @@ export async function onRequestPost(context) {
       ok: true,
       path,
       sha: response.sha || "",
+      uploadedAssets: Object.fromEntries(replacements),
     });
   } catch (err) {
     return error(err.message, 500);
