@@ -1,23 +1,19 @@
 ---
-title: "Home Pagina"
-heading: "Met BEGR!P voor elkaar kom je verder. BEGR!P wil verbinden, mogelijk maken, aanslingeren en ondersteunen, want we zien kansen voor Assen."
-about: "Wij zijn een groep jongeren die zich hard willen maken voor Assen. We horen vaak dat Assen een saaie plek is waar weinig te doen is. Wij willen zelf het initiatief nemen en de handen uit de mouwen steken. Daarnaast zien we dat er al veel initiatieven zijn, maar dat de verbinding daartussen vaak ontbreekt. Wij zien hier kansen"
-about_image: "/images/about.jpeg"
-about_link_text: "Lees verder..."
-about_link_url: "#"
-blog: "Blijf op de hoogte van onze bezigheden door onze blogs te lezen. In onze blogs delen we regelmatig updates, nieuws en samenvattingen van evenementen die we hebben georganiseerd."
-newsletter: "Wilt u regelmatig op de hoogte blijven van wat wij doen met BEGR!P. Schrijf je dan hieronder in voor onze nieuwsbrief!"
-contact: "Wil je in contact komen met BEGR!P? Geen probleem! We staan altijd open voor vragen, feedback en samenwerkingen. Laat gerust een berichtje achter via een van de genoemde mogelijkheden. we nemen zo snel mogelijk contact met je op. Of je nu meer wilt weten over ons als organisatie, een specifiek project wilt bespreken of gewoon hallo wilt zeggen, we horen graag van je!"
-support: "Jouw betrokkenheid maakt een verschil! Of je nu jouw ideeën met ons deelt, BEGR!P verspreidt onder je vrienden, of ons steunt door simpelweg op de hoogte te blijven van onze bezigheden, jouw bijdrage is waardevol en wordt zeer gewaardeerd. Samen kunnen we meer bereiken en positieve verandering teweegbrengen. Bedankt voor jouw betrokkenheid en steun!"
-support_primary_text: "Deel jouw idee met ons"
-support_primary_url: "#"
-support_secondary_text: "Vertel over BEGR!P in je netwerk"
-support_secondary_url: "#"
-contact_phone_label: "Bel of WhatsApp"
-contact_phone: "+31 685997001"
-contact_email_label: "E-mail"
-contact_email: "contact@begripassen.nl"
-contact_instagram_label: "Instagram"
-contact_instagram_handle: "@begripassen"
+title: Home Pagina
+heading: Met BEGR!P voor elkaar kom je verder. BEGR!P wil verbinden, mogelijk maken, aanslingeren en ondersteunen, want we zien kansen voor Assen.
+about: Wij zijn een groep jongeren die zich hard willen maken voor Assen. We horen vaak dat Assen een saaie plek is waar weinig te doen is. Wij willen zelf het initiatief nemen en de handen uit de mouwen steken. Daarnaast zien we dat er al veel initiatieven zijn, maar dat de verbinding daartussen vaak ontbreekt. Wij zien hier kansen
+about_image: /images/uploads/1774631717169-a731532.webp
+about_link_text: Lees verder...
+blog: Blijf op de hoogte van onze bezigheden door onze blogs te lezen. In onze blogs delen we regelmatig updates, nieuws en samenvattingen van evenementen die we hebben georganiseerd.
+newsletter: Wilt u regelmatig op de hoogte blijven van wat wij doen met BEGR!P. Schrijf je dan hieronder in voor onze nieuwsbrief!
+contact: Wil je in contact komen met BEGR!P? Geen probleem! We staan altijd open voor vragen, feedback en samenwerkingen. Laat gerust een berichtje achter via een van de genoemde mogelijkheden. we nemen zo snel mogelijk contact met je op. Of je nu meer wilt weten over ons als organisatie, een specifiek project wilt bespreken of gewoon hallo wilt zeggen, we horen graag van je!
+support: Jouw betrokkenheid maakt een verschil! Of je nu jouw ideeën met ons deelt, BEGR!P verspreidt onder je vrienden, of ons steunt door simpelweg op de hoogte te blijven van onze bezigheden, jouw bijdrage is waardevol en wordt zeer gewaardeerd. Samen kunnen we meer bereiken en positieve verandering teweegbrengen. Bedankt voor jouw betrokkenheid en steun!
+contact_phone_label: Bel of WhatsApp
+contact_phone: +31 685997001
+contact_email_label: E-mail
+contact_email: contact@begripassen.nl
+contact_instagram_label: Instagram
+contact_instagram_handle: @begripassen
 contact_instagram_url: "https://www.instagram.com/begripassen"
 ---
+
