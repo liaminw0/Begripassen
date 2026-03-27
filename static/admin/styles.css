@@ -363,46 +363,35 @@ textarea {
   margin: 0;
 }
 
-.toast-editor-field .toast-editor-shell {
-  min-height: 24rem;
+.toast-field .toast-host {
+  min-height: 26rem;
   border: 1px solid var(--line);
   border-radius: 20px;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.82);
 }
 
-.toast-editor-field .toastui-editor-defaultUI {
+.toast-field .toastui-editor-defaultUI {
   border: 0;
-  background: transparent;
 }
 
-.toast-editor-field .toastui-editor-toolbar {
+.toast-field .toastui-editor-toolbar {
   background: rgba(237, 243, 231, 0.95);
   border-bottom: 1px solid rgba(43, 56, 35, 0.1);
 }
 
-.toast-editor-field .toastui-editor-md-container,
-.toast-editor-field .toastui-editor-ww-container {
+.toast-field .toastui-editor-main {
+  min-height: 26rem;
+}
+
+.toast-field .toastui-editor-md-container,
+.toast-field .toastui-editor-ww-container,
+.toast-field .toastui-editor-mode-switch,
+.toast-field .toastui-editor-md-tab-container {
   background: rgba(255, 255, 255, 0.92);
-  color: var(--text);
 }
 
-.toast-editor-field .toastui-editor-main {
-  min-height: 24rem;
-}
-
-.toast-editor-field .toastui-editor-contents {
-  color: var(--text);
-}
-
-.toast-editor-field .toastui-editor-md-tab-container,
-.toast-editor-field .toastui-editor-mode-switch {
-  background: rgba(247, 251, 244, 0.94);
-}
-
-.toast-editor-field .toastui-editor-md-preview,
-.toast-editor-field .toastui-editor-ww-preview {
-  background: rgba(247, 251, 244, 0.94);
+.toast-field .toastui-editor-contents {
   color: var(--text);
 }
 

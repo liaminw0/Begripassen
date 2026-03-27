@@ -91,7 +91,7 @@ const state = {
   authenticated: false,
   currentItem: null,
   editorMode: "empty",
-  editors: {},
+  editorInstance: null,
   lists: {
     events: [],
     blogs: [],
@@ -280,13 +280,11 @@ function buildFieldMarkup(field, value = "") {
 
   if (field.type === "markdown") {
     const rows = field.rows || 12;
-    const isToastField = state.activeView === "blogs" && field.name === "body";
-    const blogEditorClass = isToastField ? ' class="toast-editor-field"' : "";
-    const editorShell = isToastField ? `<div class="toast-editor-shell" data-toast-editor="${field.name}"></div>` : "";
+    const isBlogBody = state.activeView === "blogs" && field.name === "body";
     return `
-      <label${blogEditorClass}>
+      <label${isBlogBody ? ' class="toast-field"' : ""}>
         ${field.label}
-        ${editorShell}
+        ${isBlogBody ? '<div class="toast-host" data-toast-editor="body"></div>' : ""}
         <textarea name="${field.name}" rows="${rows}" ${field.required ? "required" : ""}>${escapeHtml(value)}</textarea>
       </label>
     `;
@@ -350,23 +348,25 @@ function applyFieldVisibilityRules() {
   updateSignupLinkVisibility();
 }
 
-function destroyEditors() {
-  for (const editor of Object.values(state.editors)) {
-    editor.destroy();
-  }
-  state.editors = {};
-}
-
-function initializeToastEditor() {
-  destroyEditors();
-
-  if (state.activeView !== "blogs" || !window.toastui?.Editor) {
+function destroyToastEditor() {
+  if (!state.editorInstance) {
     return;
   }
 
-  const textarea = elements.editorFields.querySelector('textarea[name="body"]');
+  state.editorInstance.destroy();
+  state.editorInstance = null;
+}
+
+function initializeToastEditor() {
+  destroyToastEditor();
+
+  if (state.activeView !== "blogs" || !window.toastui || !window.toastui.Editor) {
+    return;
+  }
+
   const host = elements.editorFields.querySelector('[data-toast-editor="body"]');
-  if (!textarea || !host) {
+  const textarea = elements.editorFields.querySelector('textarea[name="body"]');
+  if (!host || !textarea) {
     return;
   }
 
@@ -375,10 +375,9 @@ function initializeToastEditor() {
     initialValue: textarea.value || "",
     initialEditType: "wysiwyg",
     previewStyle: "vertical",
+    height: "540px",
     hideModeSwitch: false,
-    height: "520px",
     usageStatistics: false,
-    placeholder: "Schrijf hier je blog...",
   });
 
   editor.on("change", () => {
@@ -386,7 +385,7 @@ function initializeToastEditor() {
   });
 
   textarea.classList.add("hidden");
-  state.editors.body = editor;
+  state.editorInstance = editor;
 }
 
 function renderFieldRows(fields, item) {
@@ -480,7 +479,7 @@ function renderHomeEditor(item) {
 }
 
 function renderEditor(item = null) {
-  destroyEditors();
+  destroyToastEditor();
   state.currentItem = item;
   setEditorMode("editing");
   const config = viewConfig[state.activeView];
@@ -721,6 +720,13 @@ async function loadHome() {
 }
 
 function collectFormData() {
+  if (state.editorInstance && state.activeView === "blogs") {
+    const bodyField = elements.editorFields.querySelector('textarea[name="body"]');
+    if (bodyField) {
+      bodyField.value = state.editorInstance.getMarkdown();
+    }
+  }
+
   const formData = new FormData(elements.editorForm);
   const config = viewConfig[state.activeView];
   const fields = {};
