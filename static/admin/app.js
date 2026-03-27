@@ -100,8 +100,8 @@ const state = {
     blogs: [],
   },
   listPagination: {
-    events: { offset: 0, limit: 20, hasMore: true, loading: false },
-    blogs: { offset: 0, limit: 20, hasMore: true, loading: false },
+    events: { offset: 0, limit: 6, hasMore: true, loading: false },
+    blogs: { offset: 0, limit: 6, hasMore: true, loading: false },
   },
 };
 
@@ -845,7 +845,7 @@ async function refreshActiveView() {
   setMessage("");
   if (state.activeView !== "home") {
     state.lists[state.activeView] = [];
-    state.listPagination[state.activeView] = { offset: 0, limit: 20, hasMore: true, loading: false };
+    state.listPagination[state.activeView] = { offset: 0, limit: 6, hasMore: true, loading: false };
   }
   renderList();
 
