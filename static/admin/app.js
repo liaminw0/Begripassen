@@ -92,6 +92,7 @@ const state = {
   currentItem: null,
   editorMode: "empty",
   editorInstance: null,
+  pendingEditorImages: [],
   lists: {
     events: [],
     blogs: [],
@@ -357,13 +358,24 @@ function applyFieldVisibilityRules() {
   updateSignupLinkVisibility();
 }
 
+function clearPendingEditorImages() {
+  for (const image of state.pendingEditorImages) {
+    if (image.objectUrl) {
+      URL.revokeObjectURL(image.objectUrl);
+    }
+  }
+  state.pendingEditorImages = [];
+}
+
 function destroyToastEditor() {
   if (!state.editorInstance) {
+    clearPendingEditorImages();
     return;
   }
 
   state.editorInstance.destroy();
   state.editorInstance = null;
+  clearPendingEditorImages();
 }
 
 function initializeToastEditor() {
@@ -387,6 +399,33 @@ function initializeToastEditor() {
     height: "540px",
     hideModeSwitch: false,
     usageStatistics: false,
+    toolbarItems: [
+      ["heading", "bold", "italic", "strike"],
+      ["hr", "quote"],
+      ["ul", "ol", "task"],
+      ["table", "image", "link"],
+    ],
+    hooks: {
+      addImageBlobHook: async (blob, callback) => {
+        try {
+          setMessage("Afbeelding omzetten naar WebP...", "");
+          const sourceFile = blob instanceof File ? blob : new File([blob], "afbeelding", { type: blob.type || "image/png" });
+          const webpFile = await convertImageToWebP(sourceFile);
+          const objectUrl = URL.createObjectURL(webpFile);
+          state.pendingEditorImages.push({
+            id: crypto.randomUUID(),
+            file: webpFile,
+            objectUrl,
+            uploadedPath: "",
+          });
+          callback(objectUrl, webpFile.name.replace(/\.[^/.]+$/, ""));
+          setMessage("Afbeelding klaar voor upload. Deze wordt opgeslagen zodra je op Opslaan klikt.", "");
+        } catch (err) {
+          setMessage(err.message, "error");
+        }
+        return false;
+      },
+    },
   });
 
   editor.on("change", () => {
@@ -758,6 +797,60 @@ function collectFormData() {
   };
 }
 
+async function processPendingEditorImages(payload) {
+  if (state.activeView !== "blogs" || !state.pendingEditorImages.length) {
+    return payload;
+  }
+
+  let body = payload.body;
+  const remainingImages = [];
+
+  for (const pendingImage of state.pendingEditorImages) {
+    if (!body.includes(pendingImage.objectUrl)) {
+      if (pendingImage.objectUrl) {
+        URL.revokeObjectURL(pendingImage.objectUrl);
+      }
+      continue;
+    }
+
+    if (!pendingImage.uploadedPath) {
+      setMessage("Blogafbeeldingen uploaden...", "");
+      const base64 = await fileToBase64(pendingImage.file);
+      const uploadPayload = await api("/api/cms/upload", {
+        method: "POST",
+        body: JSON.stringify({
+          filename: pendingImage.file.name,
+          mimeType: pendingImage.file.type,
+          base64,
+          type: state.activeView,
+          path: state.currentItem?.path || "",
+          fields: payload.fields,
+        }),
+      });
+
+      pendingImage.uploadedPath = uploadPayload.path;
+
+      if (!state.currentItem && uploadPayload.itemPath) {
+        state.currentItem = {
+          path: uploadPayload.itemPath,
+          sha: "",
+          fields: {},
+          body: "",
+          type: state.activeView,
+        };
+        elements.editorMeta.innerHTML = `<div class="meta-chip">Nieuw bestand: ${uploadPayload.itemPath}</div>`;
+        elements.editorMeta.classList.remove("hidden");
+      }
+    }
+
+    body = body.split(pendingImage.objectUrl).join(pendingImage.uploadedPath);
+    remainingImages.push(pendingImage);
+  }
+
+  state.pendingEditorImages = remainingImages;
+  return { ...payload, body };
+}
+
 function validatePayload(payload) {
   const config = viewConfig[state.activeView];
   for (const field of config.fields) {
@@ -885,8 +978,9 @@ elements.editorForm.addEventListener("submit", async (event) => {
   setMessage("Opslaan...", "");
 
   try {
-    const payload = collectFormData();
+    let payload = collectFormData();
     validatePayload(payload);
+    payload = await processPendingEditorImages(payload);
     const response = await api("/api/cms/save", {
       method: "POST",
       body: JSON.stringify({
