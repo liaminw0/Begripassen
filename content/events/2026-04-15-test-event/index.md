@@ -1,6 +1,6 @@
 ---
 title: Test Event
-date: 2026-04-15T19:30:00.000Z
+date: "2026-04-15T21:30:00.000Z"
 location: Assen
 organiser: BEGR!P Team
 show_signup: false
