@@ -172,6 +172,15 @@ label {
   font-weight: 700;
 }
 
+.field-block {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.field-label {
+  font-weight: 700;
+}
+
 input,
 textarea {
   width: 100%;
@@ -388,7 +397,6 @@ textarea {
   padding: 0;
   color: #333;
   font-weight: 400;
-  background: transparent;
   box-shadow: none;
 }
 
