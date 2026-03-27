@@ -1,23 +1,22 @@
 <div id="footer-container">
   <div class="section footer-shell">
-    {{ $baseURL := .Site.BaseURL }}
     {{ $currentPath := .RelPermalink }}
     {{ $isBaseURL := eq $currentPath "/" }}
 
     <div class="footer-brand">
-      <a class="footer-logo" href="{{ site.BaseURL }}">
-        <img src="/images/logo.svg" alt="logo">
+      <a class="footer-logo" href="{{ "/" | relURL }}">
+        <img src="{{ "images/logo.svg" | relURL }}" alt="logo">
       </a>
       <p class="footer-tagline">Samen bouwen aan ruimte voor ontmoeting, ideeën en groei in Assen.</p>
     </div>
 
     <div class="footer-links">
-      <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#heading-container"><i class="fa-solid fa-house"></i><span>Home</span></a>
-      <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#about-container"><i class="fa-solid fa-circle-info"></i><span>Over Ons</span></a>
-      <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#blog-container"><i class="fa-solid fa-blog"></i><span>Blog</span></a>
-      <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#nieuwsbrief-container"><i class="fa-solid fa-envelope"></i><span>Nieuwsbrief</span></a>
-      <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#contact-container"><i class="fa-solid fa-at"></i><span>Contact</span></a>
-      <a href="{{ if not $isBaseURL }}{{ $baseURL }}{{ end }}#steunons-container"><i class="fa-solid fa-handshake-angle"></i><span>Steun Ons</span></a>
+      <a href="{{ if not $isBaseURL }}{{ "/" | relURL }}{{ end }}#heading-container"><i class="fa-solid fa-house"></i><span>Home</span></a>
+      <a href="{{ if not $isBaseURL }}{{ "/" | relURL }}{{ end }}#about-container"><i class="fa-solid fa-circle-info"></i><span>Over Ons</span></a>
+      <a href="{{ if not $isBaseURL }}{{ "/" | relURL }}{{ end }}#blog-container"><i class="fa-solid fa-blog"></i><span>Blog</span></a>
+      <a href="{{ if not $isBaseURL }}{{ "/" | relURL }}{{ end }}#nieuwsbrief-container"><i class="fa-solid fa-envelope"></i><span>Nieuwsbrief</span></a>
+      <a href="{{ if not $isBaseURL }}{{ "/" | relURL }}{{ end }}#contact-container"><i class="fa-solid fa-at"></i><span>Contact</span></a>
+      <a href="{{ if not $isBaseURL }}{{ "/" | relURL }}{{ end }}#steunons-container"><i class="fa-solid fa-handshake-angle"></i><span>Steun Ons</span></a>
     </div>
 
     <div class="footer-connect">
