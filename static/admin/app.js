@@ -56,42 +56,33 @@ const viewConfig = {
   },
 };
 
-const homeEditorSections = [
+const homeEditorCards = [
   {
-    id: "intro",
-    eyebrow: "Intro",
-    title: "Bovenaan de pagina",
-    description: "De eerste tekst die bezoekers zien wanneer ze op de homepagina landen.",
+    eyebrow: "Bovenaan",
+    title: "Intro en over ons",
+    description: "De eerste indruk van de homepagina, plus het blok waarin BEGR!P wordt uitgelegd.",
+    sections: [
+      { id: "intro", title: "Intro" },
+      { id: "about", title: "Over ons" },
+    ],
   },
   {
-    id: "about",
-    eyebrow: "Over Ons",
-    title: "Uitleg en beeld",
-    description: "Tekst, afbeelding en knop voor het blok waarin BEGR!P wordt uitgelegd.",
+    eyebrow: "Midden",
+    title: "Blog en nieuwsbrief",
+    description: "De twee inhoudsblokken waarmee bezoekers verder lezen of zich aanmelden.",
+    sections: [
+      { id: "blog", title: "Blog" },
+      { id: "newsletter", title: "Nieuwsbrief" },
+    ],
   },
   {
-    id: "blog",
-    eyebrow: "Blog",
-    title: "Blogsectie",
-    description: "Korte introductie boven de lijst met blogartikelen.",
-  },
-  {
-    id: "newsletter",
-    eyebrow: "Nieuwsbrief",
-    title: "Nieuwsbriefblok",
-    description: "De tekst die bezoekers uitnodigt om zich aan te melden.",
-  },
-  {
-    id: "support",
-    eyebrow: "Steun Ons",
-    title: "Steun ons",
-    description: "De introtekst boven de vaste acties om BEGR!P te helpen.",
-  },
-  {
-    id: "contact",
-    eyebrow: "Contact",
-    title: "Contactgegevens",
-    description: "Inleidende tekst en de zichtbare contactinformatie op de homepagina en in de footer.",
+    eyebrow: "Onderaan",
+    title: "Steun ons en contact",
+    description: "De slotsecties van de homepage met oproep en contactinformatie.",
+    sections: [
+      { id: "support", title: "Steun ons" },
+      { id: "contact", title: "Contact" },
+    ],
   },
 ];
 
@@ -369,29 +360,46 @@ function renderFieldRows(fields, item) {
 }
 
 function renderHomeEditor(item) {
-  const sectionMarkup = homeEditorSections
-    .map((section) => {
-      const sectionFields = viewConfig.home.fields.filter((field) => field.group === section.id);
-      if (!sectionFields.length) {
+  const cardMarkup = homeEditorCards
+    .map((card) => {
+      const sectionMarkup = card.sections
+        .map((section) => {
+          const sectionFields = viewConfig.home.fields.filter((field) => field.group === section.id);
+          if (!sectionFields.length) {
+            return "";
+          }
+
+          return `
+            <section class="editor-subsection">
+              <h4>${section.title}</h4>
+              <div class="editor-subsection-fields">
+                ${renderFieldRows(sectionFields, item)}
+              </div>
+            </section>
+          `;
+        })
+        .join("");
+
+      if (!sectionMarkup) {
         return "";
       }
 
       return `
         <section class="editor-section-card">
           <div class="editor-section-head">
-            <p class="eyebrow">${section.eyebrow}</p>
-            <h3>${section.title}</h3>
-            <p>${section.description}</p>
+            <p class="eyebrow">${card.eyebrow}</p>
+            <h3>${card.title}</h3>
+            <p>${card.description}</p>
           </div>
           <div class="editor-section-fields">
-            ${renderFieldRows(sectionFields, item)}
+            ${sectionMarkup}
           </div>
         </section>
       `;
     })
     .join("");
 
-  elements.editorFields.innerHTML = `<div class="editor-section-stack">${sectionMarkup}</div>`;
+  elements.editorFields.innerHTML = `<div class="editor-section-stack">${cardMarkup}</div>`;
 }
 
 function renderEditor(item = null) {

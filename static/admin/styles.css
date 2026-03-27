@@ -259,7 +259,7 @@ textarea {
   padding: 1.2rem;
   border: 1px solid var(--line);
   border-radius: 24px;
-  background: rgba(255, 255, 255, 0.58);
+  background: #edf3e7;
 }
 
 .editor-section-head {
@@ -282,6 +282,27 @@ textarea {
 }
 
 .editor-section-fields {
+  display: grid;
+  gap: 1rem;
+}
+
+.editor-subsection {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.editor-subsection + .editor-subsection {
+  padding-top: 1rem;
+  border-top: 1px solid rgba(43, 56, 35, 0.1);
+}
+
+.editor-subsection h4 {
+  margin: 0;
+  font-family: "Sora", sans-serif;
+  font-size: 1rem;
+}
+
+.editor-subsection-fields {
   display: grid;
   gap: 1rem;
 }
