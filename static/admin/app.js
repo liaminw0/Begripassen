@@ -67,6 +67,7 @@ const elements = {
   passwordInput: document.getElementById("password-input"),
   loginError: document.getElementById("login-error"),
   logoutButton: document.getElementById("logout-button"),
+  nav: document.getElementById("cms-nav"),
   contentList: document.getElementById("content-list"),
   editorEmpty: document.getElementById("editor-empty"),
   editorEmptyEyebrow: document.getElementById("editor-empty-eyebrow"),
@@ -81,7 +82,6 @@ const elements = {
   viewEyebrow: document.getElementById("view-eyebrow"),
   viewTitle: document.getElementById("view-title"),
   listTitle: document.getElementById("list-title"),
-  resetButton: document.getElementById("reset-button"),
   navButtons: [...document.querySelectorAll(".cms-nav button")],
   itemTemplate: document.getElementById("list-item-template"),
 };
@@ -347,6 +347,7 @@ async function loadSession() {
   elements.loginPanel.classList.toggle("hidden", state.authenticated);
   elements.dashboardPanel.classList.toggle("hidden", !state.authenticated);
   elements.logoutButton.classList.toggle("hidden", !state.authenticated);
+  elements.nav.classList.toggle("hidden", !state.authenticated);
   if (state.authenticated) {
     await refreshActiveView();
   }
@@ -434,6 +435,7 @@ elements.logoutButton.addEventListener("click", async () => {
   elements.loginPanel.classList.remove("hidden");
   elements.dashboardPanel.classList.add("hidden");
   elements.logoutButton.classList.add("hidden");
+  elements.nav.classList.add("hidden");
   setMessage("");
 });
 
@@ -456,11 +458,6 @@ elements.newItemButton.addEventListener("click", async () => {
 
 elements.refreshButton.addEventListener("click", async () => {
   await refreshActiveView();
-});
-
-elements.resetButton.addEventListener("click", () => {
-  showEmptyEditorState();
-  setMessage("");
 });
 
 elements.editorForm.addEventListener("submit", async (event) => {
