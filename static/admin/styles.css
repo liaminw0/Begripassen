@@ -438,6 +438,24 @@ textarea {
   color: #333;
 }
 
+.toast-field .toastui-editor-popup .toastui-editor-ok-button,
+.toast-field .toastui-editor-popup .toastui-editor-close-button,
+.toast-field .toastui-editor-popup .toastui-editor-file-select-button {
+  background-image: none;
+  box-shadow: none;
+}
+
+.toast-field .toastui-editor-popup .toastui-editor-ok-button {
+  color: #fff;
+  background-color: #00a9ff;
+}
+
+.toast-field .toastui-editor-popup .toastui-editor-close-button,
+.toast-field .toastui-editor-popup .toastui-editor-file-select-button {
+  color: #333;
+  background-color: #f7f9fc;
+}
+
 .toast-field .toastui-editor-popup-body input[type="text"],
 .toast-field .toastui-editor-popup-body .toastui-editor-file-name {
   width: 100%;
