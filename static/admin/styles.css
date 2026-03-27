@@ -367,12 +367,35 @@ textarea {
   min-height: 26rem;
   border: 1px solid var(--line);
   border-radius: 20px;
-  overflow: hidden;
+  overflow: visible;
   background: rgba(255, 255, 255, 0.82);
 }
 
 .toast-field .toastui-editor-defaultUI {
   border: 0;
+  font-family: "Manrope", sans-serif;
+}
+
+.toast-field .toastui-editor-defaultUI button,
+.toast-field .toastui-editor-defaultUI input,
+.toast-field .toastui-editor-defaultUI select,
+.toast-field .toastui-editor-defaultUI textarea {
+  font: inherit;
+}
+
+.toast-field .toastui-editor-defaultUI button {
+  width: auto;
+  padding: 0;
+  color: #333;
+  font-weight: 400;
+  background: transparent;
+  box-shadow: none;
+}
+
+.toast-field .toastui-editor-defaultUI label {
+  display: block;
+  gap: 0;
+  font-weight: 600;
 }
 
 .toast-field .toastui-editor-toolbar {
@@ -393,6 +416,39 @@ textarea {
 
 .toast-field .toastui-editor-contents {
   color: var(--text);
+}
+
+.toast-field .toastui-editor-defaultUI-toolbar button {
+  margin: 7px 5px;
+  border-radius: 3px;
+}
+
+.toast-field .toastui-editor-popup {
+  z-index: 60;
+}
+
+.toast-field .toastui-editor-popup-body {
+  color: #333;
+}
+
+.toast-field .toastui-editor-popup-body input[type="text"],
+.toast-field .toastui-editor-popup-body .toastui-editor-file-name {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 12px;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+}
+
+.toast-field .toastui-editor-popup-add-image .toastui-editor-file-name {
+  display: inline-block;
+  width: 58%;
+}
+
+.toast-field .toastui-editor-popup-body .toastui-editor-button-container button {
+  min-width: 63px;
+  padding: 0 12px;
 }
 
 .editor-actions {
