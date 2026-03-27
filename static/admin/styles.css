@@ -375,6 +375,23 @@ textarea {
   background: rgba(237, 243, 231, 0.95);
 }
 
+.easymde-field .editor-toolbar a {
+  color: var(--text) !important;
+  border-color: transparent;
+}
+
+.easymde-field .editor-toolbar a:hover,
+.easymde-field .editor-toolbar a.active {
+  color: var(--accent-deep) !important;
+  background: rgba(30, 91, 13, 0.1);
+  border-color: rgba(30, 91, 13, 0.14);
+}
+
+.easymde-field .editor-toolbar i.separator {
+  border-left-color: rgba(43, 56, 35, 0.14);
+  border-right-color: rgba(255, 255, 255, 0.5);
+}
+
 .easymde-field .editor-toolbar::before,
 .easymde-field .editor-toolbar::after {
   display: none;
