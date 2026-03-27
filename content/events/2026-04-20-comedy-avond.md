@@ -1,6 +1,6 @@
 ---
 title: COMEDY AVOND
-date: 2026-04-20T21:30:00
+date: "2026-04-20T21:30:00"
 location: Podium Zuidhage
 organiser: Liam Inwards
 image: /images/uploads/1774619555139-dsc03930.webp
