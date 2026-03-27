@@ -363,36 +363,44 @@ textarea {
   margin: 0;
 }
 
-.easymde-field .EasyMDEContainer {
+.toast-editor-field .toast-editor-shell {
   border: 1px solid var(--line);
   border-radius: 20px;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.72);
 }
 
-.easymde-field .editor-toolbar {
+.toast-editor-field .toastui-editor-defaultUI {
   border: 0;
+  background: transparent;
+}
+
+.toast-editor-field .toastui-editor-toolbar {
   background: rgba(237, 243, 231, 0.95);
+  border-bottom: 1px solid rgba(43, 56, 35, 0.1);
 }
 
-.easymde-field .editor-toolbar::before,
-.easymde-field .editor-toolbar::after {
-  display: none;
-}
-
-.easymde-field .CodeMirror {
-  min-height: 24rem;
-  border-top: 1px solid rgba(43, 56, 35, 0.1);
+.toast-editor-field .toastui-editor-md-container,
+.toast-editor-field .toastui-editor-ww-container {
   background: rgba(255, 255, 255, 0.92);
   color: var(--text);
 }
 
-.easymde-field .CodeMirror-scroll {
+.toast-editor-field .toastui-editor-main {
   min-height: 24rem;
 }
 
-.easymde-field .editor-preview,
-.easymde-field .editor-preview-side {
+.toast-editor-field .toastui-editor-contents {
+  color: var(--text);
+}
+
+.toast-editor-field .toastui-editor-md-tab-container,
+.toast-editor-field .toastui-editor-mode-switch {
+  background: rgba(247, 251, 244, 0.94);
+}
+
+.toast-editor-field .toastui-editor-md-preview,
+.toast-editor-field .toastui-editor-ww-preview {
   background: rgba(247, 251, 244, 0.94);
   color: var(--text);
 }

@@ -280,10 +280,13 @@ function buildFieldMarkup(field, value = "") {
 
   if (field.type === "markdown") {
     const rows = field.rows || 12;
-    const blogEditorClass = state.activeView === "blogs" && field.name === "body" ? ' class="easymde-field"' : "";
+    const isToastField = state.activeView === "blogs" && field.name === "body";
+    const blogEditorClass = isToastField ? ' class="toast-editor-field"' : "";
+    const editorShell = isToastField ? `<div class="toast-editor-shell" data-toast-editor="${field.name}"></div>` : "";
     return `
       <label${blogEditorClass}>
         ${field.label}
+        ${editorShell}
         <textarea name="${field.name}" rows="${rows}" ${field.required ? "required" : ""}>${escapeHtml(value)}</textarea>
       </label>
     `;
@@ -349,50 +352,42 @@ function applyFieldVisibilityRules() {
 
 function destroyEditors() {
   for (const editor of Object.values(state.editors)) {
-    editor.toTextArea();
+    editor.destroy();
   }
   state.editors = {};
 }
 
-function initializeEasyMDE() {
+function initializeToastEditor() {
   destroyEditors();
 
-  if (state.activeView !== "blogs" || typeof EasyMDE === "undefined") {
+  if (state.activeView !== "blogs" || !window.toastui?.Editor) {
     return;
   }
 
   const textarea = elements.editorFields.querySelector('textarea[name="body"]');
-  if (!textarea) {
+  const host = elements.editorFields.querySelector('[data-toast-editor="body"]');
+  if (!textarea || !host) {
     return;
   }
 
-  state.editors.body = new EasyMDE({
-    element: textarea,
-    autoDownloadFontAwesome: false,
-    spellChecker: false,
-    status: false,
-    forceSync: true,
-    sideBySideFullscreen: false,
+  textarea.classList.add("hidden");
+
+  const editor = new window.toastui.Editor({
+    el: host,
+    initialValue: textarea.value || "",
+    initialEditType: "wysiwyg",
+    previewStyle: "vertical",
+    hideModeSwitch: false,
+    height: "520px",
+    usageStatistics: false,
     placeholder: "Schrijf hier je blog...",
-    toolbar: [
-      "bold",
-      "italic",
-      "heading",
-      "|",
-      "quote",
-      "unordered-list",
-      "ordered-list",
-      "|",
-      "link",
-      "image",
-      "|",
-      "preview",
-      "side-by-side",
-      "fullscreen",
-      "|",
-      "guide",
-    ],
   });
+
+  editor.on("change", () => {
+    textarea.value = editor.getMarkdown();
+  });
+
+  state.editors.body = editor;
 }
 
 function renderFieldRows(fields, item) {
@@ -588,7 +583,7 @@ function renderEditor(item = null) {
   }
 
   applyFieldVisibilityRules();
-  initializeEasyMDE();
+  initializeToastEditor();
 }
 
 function fileToBase64(file) {
