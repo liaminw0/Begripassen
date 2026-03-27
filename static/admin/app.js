@@ -45,6 +45,10 @@ const viewConfig = {
       { name: "blog", label: "Blog intro", type: "textarea", rows: 4, required: true, group: "blog" },
       { name: "newsletter", label: "Nieuwsbrief intro", type: "textarea", rows: 4, required: true, group: "newsletter" },
       { name: "support", label: "Steun ons intro", type: "textarea", rows: 4, required: true, group: "support" },
+      { name: "support_primary_text", label: "Steun ons knop 1 tekst", type: "text", group: "support" },
+      { name: "support_primary_url", label: "Steun ons knop 1 link", type: "url", group: "support" },
+      { name: "support_secondary_text", label: "Steun ons knop 2 tekst", type: "text", group: "support" },
+      { name: "support_secondary_url", label: "Steun ons knop 2 link", type: "url", group: "support" },
       { name: "contact", label: "Contact intro", type: "textarea", rows: 4, required: true, group: "contact" },
       { name: "contact_phone_label", label: "Telefoon label", type: "text", layout: "third", rowGroup: "contact-phone", group: "contact" },
       { name: "contact_phone", label: "Telefoonnummer", type: "text", layout: "third", rowGroup: "contact-phone", group: "contact" },
@@ -100,8 +104,8 @@ const state = {
     blogs: [],
   },
   listPagination: {
-    events: { offset: 0, limit: 6, hasMore: true, loading: false },
-    blogs: { offset: 0, limit: 6, hasMore: true, loading: false },
+    events: { offset: 0, limit: 20, hasMore: true, loading: false },
+    blogs: { offset: 0, limit: 20, hasMore: true, loading: false },
   },
 };
 
@@ -845,7 +849,7 @@ async function refreshActiveView() {
   setMessage("");
   if (state.activeView !== "home") {
     state.lists[state.activeView] = [];
-    state.listPagination[state.activeView] = { offset: 0, limit: 6, hasMore: true, loading: false };
+    state.listPagination[state.activeView] = { offset: 0, limit: 20, hasMore: true, loading: false };
   }
   renderList();
 

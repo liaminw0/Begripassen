@@ -100,8 +100,12 @@
         <h1>Steun Ons</h1>
         <p>{{ .Params.support }}</p>
         <div class="support-actions">
-          <a href="#">Deel jouw idee met ons</a>
-          <a href="#">Vertel over BEGR!P in je netwerk</a>
+          {{ with .Params.support_primary_text }}
+          <a href="{{ $.Params.support_primary_url | default "#" }}">{{ . }}</a>
+          {{ end }}
+          {{ with .Params.support_secondary_text }}
+          <a href="{{ $.Params.support_secondary_url | default "#" }}">{{ . }}</a>
+          {{ end }}
         </div>
       </div>
       <div class="support-payment-placeholder">
