@@ -99,6 +99,10 @@ const state = {
     events: [],
     blogs: [],
   },
+  listPagination: {
+    events: { offset: 0, limit: 20, hasMore: true, loading: false },
+    blogs: { offset: 0, limit: 20, hasMore: true, loading: false },
+  },
 };
 
 const elements = {
@@ -131,6 +135,8 @@ const elements = {
   navButtons: [...document.querySelectorAll(".cms-nav button")],
   itemTemplate: document.getElementById("list-item-template"),
 };
+
+let listScrollObserver = null;
 
 function trimSlashes(value) {
   return String(value || "").replace(/^\/+|\/+$/g, "");
@@ -757,12 +763,15 @@ function renderList() {
 
   if (state.activeView === "home") {
     elements.contentList.innerHTML = "";
+    teardownListObserver();
     return;
   }
 
   const items = state.lists[state.activeView] || [];
+  const pagination = state.listPagination[state.activeView];
   if (!items.length) {
     elements.contentList.innerHTML = `<p class="list-item-summary">Nog geen items gevonden.</p>`;
+    teardownListObserver();
     return;
   }
 
@@ -775,6 +784,47 @@ function renderList() {
     node.querySelector(".list-item-action").addEventListener("click", () => loadItem(item.path));
     elements.contentList.appendChild(node);
   }
+
+  if (pagination.loading) {
+    const loadingNode = document.createElement("p");
+    loadingNode.className = "list-loading";
+    loadingNode.textContent = "Meer items laden...";
+    elements.contentList.appendChild(loadingNode);
+  } else if (pagination.hasMore) {
+    const sentinel = document.createElement("div");
+    sentinel.className = "list-sentinel";
+    sentinel.setAttribute("aria-hidden", "true");
+    elements.contentList.appendChild(sentinel);
+    observeListSentinel(sentinel);
+  } else {
+    teardownListObserver();
+  }
+}
+
+function teardownListObserver() {
+  if (listScrollObserver) {
+    listScrollObserver.disconnect();
+    listScrollObserver = null;
+  }
+}
+
+function observeListSentinel(node) {
+  teardownListObserver();
+
+  if (!node || typeof IntersectionObserver === "undefined") {
+    return;
+  }
+
+  listScrollObserver = new IntersectionObserver(
+    (entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        loadMoreItems().catch((err) => setMessage(err.message, "error"));
+      }
+    },
+    { root: null, rootMargin: "160px 0px" }
+  );
+
+  listScrollObserver.observe(node);
 }
 
 async function loadSession() {
@@ -793,6 +843,10 @@ async function loadSession() {
 async function refreshActiveView() {
   showEmptyEditorState();
   setMessage("");
+  if (state.activeView !== "home") {
+    state.lists[state.activeView] = [];
+    state.listPagination[state.activeView] = { offset: 0, limit: 20, hasMore: true, loading: false };
+  }
   renderList();
 
   if (state.activeView === "home") {
@@ -800,8 +854,48 @@ async function refreshActiveView() {
     return;
   }
 
-  const payload = await api(`/api/cms/items?type=${state.activeView}`, { method: "GET", headers: {} });
-  state.lists[state.activeView] = payload.items;
+  await loadMoreItems(true);
+}
+
+async function loadMoreItems(reset = false) {
+  if (state.activeView === "home") {
+    return;
+  }
+
+  const pagination = state.listPagination[state.activeView];
+  if (pagination.loading || (!pagination.hasMore && !reset)) {
+    return;
+  }
+
+  const nextPagination = reset
+    ? { ...pagination, offset: 0, hasMore: true, loading: true }
+    : { ...pagination, loading: true };
+  state.listPagination[state.activeView] = nextPagination;
+  renderList();
+
+  try {
+    const payload = await api(
+      `/api/cms/items?type=${state.activeView}&offset=${reset ? 0 : pagination.offset}&limit=${pagination.limit}`,
+      { method: "GET", headers: {} }
+    );
+
+    state.lists[state.activeView] = reset
+      ? payload.items
+      : [...state.lists[state.activeView], ...payload.items];
+
+    state.listPagination[state.activeView] = {
+      ...pagination,
+      offset: (reset ? 0 : pagination.offset) + payload.items.length,
+      limit: payload.limit || pagination.limit,
+      hasMore: Boolean(payload.hasMore),
+      loading: false,
+    };
+  } catch (err) {
+    state.listPagination[state.activeView] = { ...pagination, loading: false };
+    renderList();
+    throw err;
+  }
+
   renderList();
 }
 

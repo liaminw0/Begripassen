@@ -249,6 +249,18 @@ textarea {
   margin: 0;
 }
 
+.list-loading {
+  margin: 0;
+  padding: 0.5rem 0.25rem 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.list-sentinel {
+  width: 100%;
+  height: 1px;
+}
+
 .editor-fields {
   display: grid;
   gap: 1rem;

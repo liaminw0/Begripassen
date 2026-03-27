@@ -17,6 +17,10 @@ async function loadItemFromEntry(config, type, entryPath) {
   return summarizeItem(type, file.path, normalizeFields(type, parsed.fields), parsed.body);
 }
 
+function compareEntriesByPathDesc(a, b) {
+  return String(b.path || "").localeCompare(String(a.path || ""));
+}
+
 export async function onRequestGet(context) {
   const unauthorized = await requireAuth(context);
   if (unauthorized) {
@@ -26,6 +30,8 @@ export async function onRequestGet(context) {
   const { searchParams } = new URL(context.request.url);
   const type = searchParams.get("type");
   const path = searchParams.get("path");
+  const offset = Math.max(0, Number.parseInt(searchParams.get("offset") || "0", 10) || 0);
+  const limit = Math.min(50, Math.max(1, Number.parseInt(searchParams.get("limit") || "20", 10) || 20));
   const definition = getTypeDefinition(type);
 
   if (!definition) {
@@ -71,29 +77,39 @@ export async function onRequestGet(context) {
     }
 
     const entries = await listRepoDirectory(config, definition.path);
-    const itemPromises = entries.map(async (entry) => {
-      if (entry.type === "file" && entry.name.endsWith(".md")) {
+    const eligibleEntries = entries
+      .filter((entry) => {
+        if (entry.type === "file") {
+          return entry.name.endsWith(".md") && entry.name !== "_index.md";
+        }
+
+        return entry.type === "dir";
+      })
+      .sort(compareEntriesByPathDesc);
+
+    const selectedEntries = eligibleEntries.slice(offset, offset + limit);
+    const itemPromises = selectedEntries.map(async (entry) => {
+      if (entry.type === "file") {
         return loadItemFromEntry(config, type, entry.path);
       }
 
-      if (entry.type === "dir") {
-        try {
-          return await loadItemFromEntry(config, type, `${entry.path}/index.md`);
-        } catch {
-          return null;
-        }
+      try {
+        return await loadItemFromEntry(config, type, `${entry.path}/index.md`);
+      } catch {
+        return null;
       }
-
-      return null;
     });
 
-    const items = (await Promise.all(itemPromises)).filter(Boolean);
-
-    items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    const items = (await Promise.all(itemPromises))
+      .filter(Boolean)
+      .sort((a, b) => String(b.date).localeCompare(String(a.date)));
 
     return json({
       ok: true,
       items,
+      offset,
+      limit,
+      hasMore: offset + selectedEntries.length < eligibleEntries.length,
     });
   } catch (err) {
     return error(err.message, 500);
