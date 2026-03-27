@@ -89,7 +89,14 @@ export async function onRequestGet(context) {
 
     const items = (await Promise.all(itemPromises)).filter(Boolean);
 
-    items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
+    items.sort((a, b) => {
+      const byDate = String(b.date).localeCompare(String(a.date));
+      if (byDate !== 0) {
+        return byDate;
+      }
+
+      return String(b.cms_updated_at || "").localeCompare(String(a.cms_updated_at || ""));
+    });
 
     return json({
       ok: true,

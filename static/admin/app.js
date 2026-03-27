@@ -972,6 +972,63 @@ function formatListMeta(item) {
   return parts.join(" · ");
 }
 
+function compareCmsItems(a, b) {
+  const byDate = String(b.date || "").localeCompare(String(a.date || ""));
+  if (byDate !== 0) {
+    return byDate;
+  }
+
+  return String(b.cms_updated_at || "").localeCompare(String(a.cms_updated_at || ""));
+}
+
+function updateCurrentItemState(response, payload) {
+  if (!response?.path) {
+    return;
+  }
+
+  state.currentItem = {
+    ...(state.currentItem || {}),
+    path: response.path,
+    sha: response.sha || state.currentItem?.sha || "",
+    fields: { ...payload.fields },
+    body: payload.body,
+    type: state.activeView,
+  };
+
+  elements.editorMeta.innerHTML = `<div class="meta-chip">Bewerkt bestand: ${response.path}</div>`;
+  elements.editorMeta.classList.remove("hidden");
+}
+
+function upsertListItemFromPayload(response, payload) {
+  if (state.activeView === "home" || !response?.path) {
+    return;
+  }
+
+  const summary = String(payload.fields.summary || payload.body.split("\n").find(Boolean) || "").trim();
+  const nextItem = {
+    path: response.path,
+    title: payload.fields.title || "Zonder titel",
+    date: payload.fields.date || "",
+    cms_updated_at: response.cms_updated_at || new Date().toISOString(),
+    draft: Boolean(payload.fields.draft),
+    author: payload.fields.author || payload.fields.organiser || "",
+    summary,
+    type: state.activeView,
+  };
+
+  const items = [...(state.lists[state.activeView] || [])];
+  const existingIndex = items.findIndex((item) => item.path === response.path);
+  if (existingIndex >= 0) {
+    items[existingIndex] = nextItem;
+  } else {
+    items.unshift(nextItem);
+  }
+
+  items.sort(compareCmsItems);
+  state.lists[state.activeView] = items;
+  renderList();
+}
+
 elements.loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   setLoginError("");
@@ -1068,14 +1125,9 @@ elements.editorForm.addEventListener("submit", async (event) => {
       }),
     });
 
+    updateCurrentItemState(response, payload);
+    upsertListItemFromPayload(response, payload);
     setMessage("Opgeslagen. Vergeet niet dat Cloudflare Pages daarna opnieuw moet deployen.", "success");
-
-    if (state.activeView === "home") {
-      await loadHome();
-    } else {
-      await refreshActiveView();
-      await loadItem(response.path);
-    }
   } catch (err) {
     setMessage(err.message, "error");
   }
