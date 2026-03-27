@@ -1,5 +1,16 @@
 {{ define "main" }}
 <main>
+  {{ $defaultImage := "images/about.jpeg" | relURL }}
+  {{ $heroImage := $defaultImage }}
+  {{ with .Params.image }}
+    {{ if hasPrefix . "/" }}
+      {{ $heroImage = . | relURL }}
+    {{ else }}
+      {{ with $.Resources.GetMatch . }}
+        {{ $heroImage = .RelPermalink }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
   <div id="single-page" class="{{ if eq .Section "events" }}single-event{{ else if eq .Section "blogs" }}single-default single-blog{{ else }}single-default{{ end }}">
     <div class="single-shell">
       {{ if eq .Section "events" }}
@@ -17,7 +28,7 @@
           </div>
         </div>
         <div class="single-hero-image">
-          <img src="{{ if .Params.image }}{{ .Params.image | relURL }}{{ else }}{{ "images/about.jpeg" | relURL }}{{ end }}" alt="{{ .Title }}">
+          <img src="{{ $heroImage }}" alt="{{ .Title }}">
         </div>
       </header>
       {{ else }}
@@ -35,7 +46,7 @@
         </div>
         {{ if eq .Section "blogs" }}
         <div class="single-hero-image">
-          <img src="{{ if .Params.image }}{{ .Params.image | relURL }}{{ else }}{{ "images/about.jpeg" | relURL }}{{ end }}" alt="{{ .Title }}">
+          <img src="{{ $heroImage }}" alt="{{ .Title }}">
         </div>
         {{ end }}
       </header>

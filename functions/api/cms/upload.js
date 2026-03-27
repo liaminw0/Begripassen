@@ -1,4 +1,13 @@
-import { error, getCmsConfig, json, putRepoFileBase64, requireAuth, slugify } from "./_lib";
+import {
+  buildBundleDirectory,
+  buildPublicBundleBase,
+  error,
+  getCmsConfig,
+  json,
+  putRepoFileBase64,
+  requireAuth,
+  slugify,
+} from "./_lib";
 
 const MIME_EXTENSIONS = {
   "image/jpeg": "jpg",
@@ -39,13 +48,35 @@ export async function onRequestPost(context) {
   }
 
   try {
-    const filepath = `static/images/uploads/${Date.now()}-${sanitizeFilename(payload.filename, payload.mimeType)}`;
+    const cmsType = payload.type || "";
+    const fields = payload.fields || {};
+    const currentPath = payload.path || "";
+    const filename = `${Date.now()}-${sanitizeFilename(payload.filename, payload.mimeType)}`;
+    let filepath = `static/images/uploads/${filename}`;
+    let fieldPath = `/${filepath.replace(/^static\//, "")}`;
+    let previewUrl = fieldPath;
+    let itemPath = "";
+
+    if (cmsType === "events" || cmsType === "blogs") {
+      const bundleDir = buildBundleDirectory(cmsType, fields, currentPath);
+      const publicBase = buildPublicBundleBase(cmsType, fields, currentPath);
+
+      if (bundleDir && publicBase) {
+        filepath = `${bundleDir}/media/${filename}`;
+        fieldPath = `media/${filename}`;
+        previewUrl = `${publicBase}${fieldPath}`;
+        itemPath = `${bundleDir}/index.md`;
+      }
+    }
+
     const message = `Upload image: ${payload.filename}`;
     await putRepoFileBase64(config, filepath, payload.base64, message);
 
     return json({
       ok: true,
-      path: `/${filepath.replace(/^static\//, "")}`,
+      path: fieldPath,
+      previewUrl,
+      itemPath,
     });
   } catch (err) {
     return error(err.message, 500);

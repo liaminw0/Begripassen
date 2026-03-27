@@ -10,13 +10,13 @@ Op 19 mei hebben we met z'n allen de eerste 'Nacht van Begrip' gevierd in Annie'
 
 De avond werd gehost door Marnix, die onder andere de taak had de muzikale acts te introduceren. Zo trad de band New Dawn Fades voor het eerst op, speelden Leonie & Camiel een aantal eigen nummers en sloot DJ Daiya af met zijn eerste optreden in eigen stad.
 
-![Groep dansende jeugd](/img/dansen.png#center)
+![Groep dansende jeugd](media/dansen.png#center)
 
-![Marnix](/img/marnix.jpg#center)
+![Marnix](media/marnix.jpg#center)
 
 Het kernprogramma van de avond, met daarin de presentatie van BEGR!P, vond plaats in een aparte zaal. We vertelden hoe BEGR!P in het leven is geroepen en stelden de vragen: Wat is jouw droom voor Assen? Welke rol wil je daarin zelf spelen? Na afloop waren er korte interviews waarin enkele initiatiefnemende jongeren vertelden wat ze van Assen vinden en welke potentie ze in de stad zien. Zo vertelde Coen (Coenakis) hoe hij bezig is met het creëren van een studio om een plek te bieden voor jonge producers. Matheus Pattinasarany van North Art Label, hoewel geen jongere meer, maar wel jong van geest, vertelde over wat North Art Label doet en wat zijn droom is voor Assen. Hij zei op de avond: ''Laten we van Assen het nieuwe Athene maken.''
 
-![Benne](/img/benne.png#center)
+![Benne](media/benne.png#center)
 
 Wij willen iedereen bedanken die aanwezig was bij de Nacht van BEGR!P! Er zijn mooie nieuwe connecties ontstaan en er is nu een grote groep mensen die durft te dromen. Het is tijd om de handen uit de mouwen te steken en aan het werk te gaan!
 

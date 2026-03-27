@@ -11,6 +11,12 @@ import {
   summarizeItem,
 } from "./_lib";
 
+async function loadItemFromEntry(config, type, entryPath) {
+  const file = await getRepoFile(config, entryPath);
+  const parsed = parseMarkdownFile(file.content);
+  return summarizeItem(type, file.path, normalizeFields(type, parsed.fields), parsed.body);
+}
+
 export async function onRequestGet(context) {
   const unauthorized = await requireAuth(context);
   if (unauthorized) {
@@ -65,14 +71,23 @@ export async function onRequestGet(context) {
     }
 
     const entries = await listRepoDirectory(config, definition.path);
-    const markdownEntries = entries.filter((entry) => entry.type === "file" && entry.name.endsWith(".md"));
-    const items = await Promise.all(
-      markdownEntries.map(async (entry) => {
-        const file = await getRepoFile(config, entry.path);
-        const parsed = parseMarkdownFile(file.content);
-        return summarizeItem(type, entry.path, normalizeFields(type, parsed.fields), parsed.body);
-      })
-    );
+    const itemPromises = entries.map(async (entry) => {
+      if (entry.type === "file" && entry.name.endsWith(".md")) {
+        return loadItemFromEntry(config, type, entry.path);
+      }
+
+      if (entry.type === "dir") {
+        try {
+          return await loadItemFromEntry(config, type, `${entry.path}/index.md`);
+        } catch {
+          return null;
+        }
+      }
+
+      return null;
+    });
+
+    const items = (await Promise.all(itemPromises)).filter(Boolean);
 
     items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
 

@@ -128,6 +128,28 @@ const elements = {
   itemTemplate: document.getElementById("list-item-template"),
 };
 
+function trimSlashes(value) {
+  return String(value || "").replace(/^\/+|\/+$/g, "");
+}
+
+function resolveImagePreviewUrl(rawValue, itemPath = "") {
+  const value = String(rawValue || "").trim();
+  if (!value) {
+    return "";
+  }
+
+  if (/^(https?:)?\/\//.test(value) || value.startsWith("/") || value.startsWith("data:") || value.startsWith("blob:")) {
+    return value;
+  }
+
+  if (!itemPath || !/\/index\.md$/.test(itemPath)) {
+    return value;
+  }
+
+  const publicBase = `/${trimSlashes(itemPath.replace(/^content\//, "").replace(/\/index\.md$/, ""))}/`;
+  return `${publicBase}${trimSlashes(value)}`;
+}
+
 function setMessage(message, tone = "") {
   elements.editorMessage.textContent = message || "";
   elements.editorMessage.className = tone ? `form-message ${tone}` : "form-message";
@@ -256,8 +278,9 @@ function buildFieldMarkup(field, value = "") {
   }
 
   if (field.type === "image") {
-    const previewMarkup = value
-      ? `<div class="image-preview" data-image-preview="${field.name}"><img src="${escapeHtml(value)}" alt="${escapeHtml(field.label)}" loading="lazy" /></div>`
+    const previewValue = resolveImagePreviewUrl(value, state.currentItem?.path || "");
+    const previewMarkup = previewValue
+      ? `<div class="image-preview" data-image-preview="${field.name}"><img src="${escapeHtml(previewValue)}" alt="${escapeHtml(field.label)}" loading="lazy" /></div>`
       : `<div class="image-preview hidden" data-image-preview="${field.name}"><img src="" alt="${escapeHtml(field.label)}" loading="lazy" /></div>`;
 
     return `
@@ -422,14 +445,15 @@ function renderEditor(item = null) {
     const preview = elements.editorFields.querySelector(`[data-image-preview="${fieldName}"]`);
     const previewImage = preview?.querySelector("img");
 
-    const syncImagePreview = (value) => {
+    const syncImagePreview = (value, explicitPreviewUrl = "") => {
       if (!preview || !previewImage) {
         return;
       }
 
-      const hasValue = Boolean(String(value || "").trim());
+      const previewUrl = explicitPreviewUrl || resolveImagePreviewUrl(value, state.currentItem?.path || "");
+      const hasValue = Boolean(String(previewUrl || "").trim());
       preview.classList.toggle("hidden", !hasValue);
-      previewImage.src = hasValue ? value : "";
+      previewImage.src = hasValue ? previewUrl : "";
     };
 
     const showLocalImagePreview = (file) => {
@@ -472,10 +496,24 @@ function renderEditor(item = null) {
             filename: webpFile.name,
             mimeType: webpFile.type,
             base64,
+            type: state.activeView,
+            path: state.currentItem?.path || "",
+            fields: collectFormData().fields,
           }),
         });
+        if (!state.currentItem && payload.itemPath) {
+          state.currentItem = {
+            path: payload.itemPath,
+            sha: "",
+            fields: {},
+            body: "",
+            type: state.activeView,
+          };
+          elements.editorMeta.innerHTML = `<div class="meta-chip">Nieuw bestand: ${payload.itemPath}</div>`;
+          elements.editorMeta.classList.remove("hidden");
+        }
         targetInput.value = payload.path;
-        syncImagePreview(payload.path);
+        syncImagePreview(payload.path, payload.previewUrl || "");
         setMessage("Afbeelding geüpload als WebP en ingevuld.", "success");
       } catch (err) {
         setMessage(err.message, "error");

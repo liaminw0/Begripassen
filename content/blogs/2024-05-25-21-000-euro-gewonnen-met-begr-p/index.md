@@ -13,4 +13,4 @@ geweest doordat jullie allemaal massaal op ons idee hebben gestemd. Het was voor
 ### Groeten,
 
 ### Team BEGR!P
-![Gewonnen](/images/insta.png#center)
+![Gewonnen](media/insta.png#center)

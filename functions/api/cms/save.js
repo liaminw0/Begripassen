@@ -41,7 +41,7 @@ export async function onRequestPost(context) {
   const fields = normalizeFields(type, payload.fields || {});
   const body = payload.body || "";
   const path = buildContentPath(type, fields, payload.path);
-  const isUpdate = Boolean(payload.path);
+  const isUpdate = Boolean(payload.path && payload.sha);
 
   try {
     let sha = payload.sha || "";

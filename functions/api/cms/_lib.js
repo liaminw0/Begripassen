@@ -377,6 +377,49 @@ function datePrefix(dateValue) {
   return match ? match[1] : new Date().toISOString().slice(0, 10);
 }
 
+function stripFileExtension(path) {
+  return String(path || "").replace(/\.[^/.]+$/, "");
+}
+
+function trimSlashes(value) {
+  return String(value || "").replace(/^\/+|\/+$/g, "");
+}
+
+export function isBundlePath(path) {
+  return /\/index\.md$/.test(String(path || ""));
+}
+
+export function pathDirname(path) {
+  return String(path || "").replace(/\/[^/]+$/, "");
+}
+
+export function buildBundleDirectory(type, fields, currentPath) {
+  if (type === "home") {
+    return "";
+  }
+
+  if (currentPath) {
+    if (isBundlePath(currentPath)) {
+      return pathDirname(currentPath);
+    }
+
+    return "";
+  }
+
+  const definition = getTypeDefinition(type);
+  const slug = slugify(fields.slug || fields.title || `nieuw-${type.slice(0, -1)}`);
+  return `${definition.path}/${datePrefix(fields.date)}-${slug}`;
+}
+
+export function buildPublicBundleBase(type, fields, currentPath) {
+  const bundleDir = buildBundleDirectory(type, fields, currentPath);
+  if (!bundleDir) {
+    return "";
+  }
+
+  return `/${trimSlashes(bundleDir.replace(/^content\//, ""))}/`;
+}
+
 function normalizeEventDate(value) {
   const raw = String(value || "").trim();
   if (!raw) {
@@ -384,7 +427,11 @@ function normalizeEventDate(value) {
   }
 
   if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)) {
-    return `${raw}:00`;
+    return `${raw}:00.000Z`;
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(raw)) {
+    return `${raw}.000Z`;
   }
 
   return raw;
@@ -426,11 +473,7 @@ export function buildContentPath(type, fields, currentPath) {
     return currentPath;
   }
 
-  const definition = getTypeDefinition(type);
-  const singular = type.endsWith("s") ? type.slice(0, -1) : type;
-  const slug = slugify(fields.slug || fields.title || `nieuw-${singular}`);
-  const filename = `${datePrefix(fields.date)}-${slug}.md`;
-  return `${definition.path}/${filename}`;
+  return `${buildBundleDirectory(type, fields, currentPath)}/index.md`;
 }
 
 export function normalizeFields(type, rawFields) {
