@@ -11,7 +11,7 @@ const viewConfig = {
       { name: "organiser", label: "Organisator", type: "text" },
       { name: "image", label: "Omslagafbeelding", type: "image" },
       { name: "show_signup", label: "Aanmeldknop tonen", type: "checkbox" },
-      { name: "signup_link", label: "Aanmeldlink", type: "url" },
+      { name: "signup_link", label: "Aanmeldlink", type: "text" },
       { name: "draft", label: "Concept", type: "checkbox" },
       { name: "body", label: "Inhoud", type: "markdown", required: true },
     ],
@@ -432,6 +432,17 @@ function renderEditor(item = null) {
       previewImage.src = hasValue ? value : "";
     };
 
+    const showLocalImagePreview = (file) => {
+      if (!preview || !previewImage || !file) {
+        return null;
+      }
+
+      const objectUrl = URL.createObjectURL(file);
+      preview.classList.remove("hidden");
+      previewImage.src = objectUrl;
+      return objectUrl;
+    };
+
     targetInput?.addEventListener("input", () => {
       syncImagePreview(targetInput.value);
     });
@@ -447,7 +458,10 @@ function renderEditor(item = null) {
         return;
       }
 
+      let localPreviewUrl = null;
+
       try {
+        localPreviewUrl = showLocalImagePreview(file);
         setMessage("Afbeelding omzetten naar WebP...", "");
         const webpFile = await convertImageToWebP(file);
         setMessage("Afbeelding uploaden...", "");
@@ -466,6 +480,9 @@ function renderEditor(item = null) {
       } catch (err) {
         setMessage(err.message, "error");
       } finally {
+        if (localPreviewUrl) {
+          URL.revokeObjectURL(localPreviewUrl);
+        }
         fileInput.value = "";
       }
     });

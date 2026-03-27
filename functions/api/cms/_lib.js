@@ -377,6 +377,46 @@ function datePrefix(dateValue) {
   return match ? match[1] : new Date().toISOString().slice(0, 10);
 }
 
+function normalizeEventDate(value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)) {
+    return `${raw}:00`;
+  }
+
+  return raw;
+}
+
+function normalizeBlogDate(value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  const match = raw.match(/^(\d{4}-\d{2}-\d{2})/);
+  return match ? match[1] : raw;
+}
+
+function normalizeUrlLikeValue(value) {
+  const raw = String(value || "").trim();
+  if (!raw) {
+    return "";
+  }
+
+  if (
+    raw.startsWith("/") ||
+    raw.startsWith("#") ||
+    /^[a-z][a-z0-9+.-]*:/i.test(raw)
+  ) {
+    return raw;
+  }
+
+  return `https://${raw}`;
+}
+
 export function buildContentPath(type, fields, currentPath) {
   if (type === "home") {
     return CMS_TYPES.home.path;
@@ -422,12 +462,12 @@ export function normalizeFields(type, rawFields) {
   if (type === "events") {
     return {
       title: rawFields.title || "",
-      date: rawFields.date || "",
+      date: normalizeEventDate(rawFields.date),
       location: rawFields.location || "",
       organiser: rawFields.organiser || rawFields.author || "",
       image: rawFields.image || "",
       show_signup: Boolean(rawFields.show_signup),
-      signup_link: rawFields.signup_link || "",
+      signup_link: normalizeUrlLikeValue(rawFields.signup_link),
       draft: Boolean(rawFields.draft),
       summary: rawFields.summary || "",
     };
@@ -436,7 +476,7 @@ export function normalizeFields(type, rawFields) {
   if (type === "blogs") {
     return {
       title: rawFields.title || "",
-      date: rawFields.date || "",
+      date: normalizeBlogDate(rawFields.date),
       author: rawFields.author || "",
       image: rawFields.image || "",
       draft: Boolean(rawFields.draft),
