@@ -1,27 +1,12 @@
 import {
-  buildBundleDirectory,
-  buildPublicBundleBase,
+  buildContentPath,
+  buildUploadTarget,
   error,
   getCmsConfig,
   json,
   putRepoFileBase64,
   requireAuth,
-  slugify,
 } from "./_lib";
-
-const MIME_EXTENSIONS = {
-  "image/jpeg": "jpg",
-  "image/png": "png",
-  "image/webp": "webp",
-  "image/gif": "gif",
-  "image/svg+xml": "svg",
-};
-
-function sanitizeFilename(filename, mimeType) {
-  const cleanBase = slugify(filename.replace(/\.[^/.]+$/, "")) || "upload";
-  const extension = MIME_EXTENSIONS[mimeType] || filename.split(".").pop().toLowerCase() || "bin";
-  return `${cleanBase}.${extension}`;
-}
 
 export async function onRequestPost(context) {
   const unauthorized = await requireAuth(context);
@@ -50,24 +35,15 @@ export async function onRequestPost(context) {
   try {
     const cmsType = payload.type || "";
     const fields = payload.fields || {};
-    const currentPath = payload.path || "";
-    const filename = `${Date.now()}-${sanitizeFilename(payload.filename, payload.mimeType)}`;
-    let filepath = `static/images/uploads/${filename}`;
-    let fieldPath = `/${filepath.replace(/^static\//, "")}`;
-    let previewUrl = fieldPath;
-    let itemPath = "";
-
-    if (cmsType === "events" || cmsType === "blogs") {
-      const bundleDir = buildBundleDirectory(cmsType, fields, currentPath);
-      const publicBase = buildPublicBundleBase(cmsType, fields, currentPath);
-
-      if (bundleDir && publicBase) {
-        filepath = `${bundleDir}/media/${filename}`;
-        fieldPath = `media/${filename}`;
-        previewUrl = `${publicBase}${fieldPath}`;
-        itemPath = `${bundleDir}/index.md`;
-      }
-    }
+    const currentPath = buildContentPath(cmsType, fields, payload.path || "");
+    const target = buildUploadTarget(cmsType, currentPath, payload.filename, payload.mimeType);
+    const filepath = target.filepath;
+    const fieldPath = target.fieldPath;
+    const previewUrl =
+      (cmsType === "events" || cmsType === "blogs") && fieldPath.startsWith("media/")
+        ? `/${currentPath.replace(/^content\//, "").replace(/\/index\.md$/, "")}/${fieldPath}`
+        : fieldPath;
+    const itemPath = (cmsType === "events" || cmsType === "blogs") ? currentPath : "";
 
     const message = `Upload image: ${payload.filename}`;
     await putRepoFileBase64(config, filepath, payload.base64, message);

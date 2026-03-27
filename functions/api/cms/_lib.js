@@ -178,6 +178,11 @@ async function githubRequest(config, path, init = {}) {
   return response;
 }
 
+async function githubJson(config, path, init = {}) {
+  const response = await githubRequest(config, path, init);
+  return response.json();
+}
+
 export async function listRepoDirectory(config, path) {
   const response = await githubRequest(
     config,
@@ -211,6 +216,10 @@ function bytesToBase64(bytes) {
 
 function toBase64(content) {
   return bytesToBase64(encoder.encode(content));
+}
+
+export function encodeContentBase64(content) {
+  return toBase64(content);
 }
 
 export async function putRepoFile(config, path, content, message, sha) {
@@ -271,6 +280,113 @@ export async function deleteRepoFile(config, path, message, sha) {
   );
 
   return response.json();
+}
+
+export async function batchCommitRepoFiles(config, files, message) {
+  if (!Array.isArray(files) || !files.length) {
+    throw new Error("No files to commit");
+  }
+
+  const ref = await githubJson(
+    config,
+    `/repos/${config.owner}/${config.repo}/git/ref/heads/${encodeURIComponent(config.branch)}`
+  );
+
+  const headCommitSha = ref.object?.sha;
+  if (!headCommitSha) {
+    throw new Error(`Could not resolve branch head for ${config.branch}`);
+  }
+
+  const headCommit = await githubJson(
+    config,
+    `/repos/${config.owner}/${config.repo}/git/commits/${headCommitSha}`
+  );
+
+  const baseTreeSha = headCommit.tree?.sha;
+  if (!baseTreeSha) {
+    throw new Error("Could not resolve base tree");
+  }
+
+  const uniqueFiles = new Map();
+  for (const file of files) {
+    if (!file?.path || !file?.contentBase64) {
+      continue;
+    }
+    uniqueFiles.set(file.path, file.contentBase64);
+  }
+
+  const tree = [];
+  for (const [path, contentBase64] of uniqueFiles.entries()) {
+    const blob = await githubJson(
+      config,
+      `/repos/${config.owner}/${config.repo}/git/blobs`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          content: contentBase64,
+          encoding: "base64",
+        }),
+      }
+    );
+
+    tree.push({
+      path,
+      mode: "100644",
+      type: "blob",
+      sha: blob.sha,
+    });
+  }
+
+  const createdTree = await githubJson(
+    config,
+    `/repos/${config.owner}/${config.repo}/git/trees`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        base_tree: baseTreeSha,
+        tree,
+      }),
+    }
+  );
+
+  const commitBody = {
+    message,
+    tree: createdTree.sha,
+    parents: [headCommitSha],
+  };
+
+  if (config.committerName && config.committerEmail) {
+    commitBody.committer = {
+      name: config.committerName,
+      email: config.committerEmail,
+    };
+    commitBody.author = {
+      name: config.committerName,
+      email: config.committerEmail,
+    };
+  }
+
+  const createdCommit = await githubJson(
+    config,
+    `/repos/${config.owner}/${config.repo}/git/commits`,
+    {
+      method: "POST",
+      body: JSON.stringify(commitBody),
+    }
+  );
+
+  await githubJson(
+    config,
+    `/repos/${config.owner}/${config.repo}/git/refs/heads/${encodeURIComponent(config.branch)}`,
+    {
+      method: "PATCH",
+      body: JSON.stringify({
+        sha: createdCommit.sha,
+      }),
+    }
+  );
+
+  return createdCommit;
 }
 
 function parseFrontmatterValue(rawValue) {
@@ -368,6 +484,20 @@ export function slugify(value) {
     .replace(/-{2,}/g, "-");
 }
 
+const MIME_EXTENSIONS = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/gif": "gif",
+  "image/svg+xml": "svg",
+};
+
+export function sanitizeUploadFilename(filename, mimeType) {
+  const cleanBase = slugify(String(filename || "").replace(/\.[^/.]+$/, "")) || "upload";
+  const extension = MIME_EXTENSIONS[mimeType] || String(filename || "").split(".").pop().toLowerCase() || "bin";
+  return `${cleanBase}.${extension}`;
+}
+
 function datePrefix(dateValue) {
   if (!dateValue) {
     return new Date().toISOString().slice(0, 10);
@@ -418,6 +548,26 @@ export function buildPublicBundleBase(type, fields, currentPath) {
   }
 
   return `/${trimSlashes(bundleDir.replace(/^content\//, ""))}/`;
+}
+
+export function buildUploadTarget(type, contentPath, filename, mimeType) {
+  const safeFilename = `${Date.now()}-${sanitizeUploadFilename(filename, mimeType)}`;
+
+  if (type === "events" || type === "blogs") {
+    const bundleDir = isBundlePath(contentPath) ? pathDirname(contentPath) : "";
+    if (bundleDir) {
+      return {
+        filepath: `${bundleDir}/media/${safeFilename}`,
+        fieldPath: `media/${safeFilename}`,
+      };
+    }
+  }
+
+  const filepath = `static/images/uploads/${safeFilename}`;
+  return {
+    filepath,
+    fieldPath: `/${filepath.replace(/^static\//, "")}`,
+  };
 }
 
 function normalizeEventDate(value) {

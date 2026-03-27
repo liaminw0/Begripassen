@@ -1,12 +1,13 @@
 import {
+  batchCommitRepoFiles,
+  buildUploadTarget,
   buildContentPath,
+  encodeContentBase64,
   error,
   getCmsConfig,
-  getRepoFile,
   getTypeDefinition,
   json,
   normalizeFields,
-  putRepoFile,
   requireAuth,
   serializeMarkdownFile,
 } from "./_lib";
@@ -38,35 +39,62 @@ export async function onRequestPost(context) {
     return error(err.message, 500);
   }
 
-  const fields = normalizeFields(type, payload.fields || {});
-  const body = payload.body || "";
-  const path = buildContentPath(type, fields, payload.path);
-  const isUpdate = Boolean(payload.path && payload.sha);
+  const rawFields = { ...(payload.fields || {}) };
+  const uploads = Array.isArray(payload.uploads) ? payload.uploads : [];
 
   try {
-    let sha = payload.sha || "";
+    const provisionalFields = normalizeFields(type, rawFields);
+    const path = buildContentPath(type, provisionalFields, payload.path);
+    const uploadFiles = [];
+    const replacements = new Map();
 
-    if (isUpdate && !sha) {
-      const existing = await getRepoFile(config, path);
-      sha = existing.sha;
+    for (const upload of uploads) {
+      if (!upload?.token || !upload?.base64 || !upload?.filename || !upload?.mimeType) {
+        continue;
+      }
+
+      const target = buildUploadTarget(type, path, upload.filename, upload.mimeType);
+      replacements.set(upload.token, target.fieldPath);
+      uploadFiles.push({
+        path: target.filepath,
+        contentBase64: upload.base64,
+      });
     }
 
+    for (const [key, value] of Object.entries(rawFields)) {
+      if (typeof value !== "string") {
+        continue;
+      }
+
+      let nextValue = value;
+      for (const [token, replacement] of replacements.entries()) {
+        nextValue = nextValue.split(token).join(replacement);
+      }
+      rawFields[key] = nextValue;
+    }
+
+    let body = String(payload.body || "");
+    for (const [token, replacement] of replacements.entries()) {
+      body = body.split(token).join(replacement);
+    }
+
+    const fields = normalizeFields(type, rawFields);
     const markdown = serializeMarkdownFile(fields, body);
     const singular = type.endsWith("s") ? type.slice(0, -1) : type;
-    const actionLabel = isUpdate ? "Update" : "Create";
+    const actionLabel = payload.path ? "Update" : "Create";
     const commitTitle = fields.title || "homepage copy";
-    const response = await putRepoFile(
-      config,
-      path,
-      markdown,
-      `${actionLabel} ${singular}: ${commitTitle}`,
-      sha || undefined
-    );
+    const response = await batchCommitRepoFiles(config, [
+      ...uploadFiles,
+      {
+        path,
+        contentBase64: encodeContentBase64(markdown),
+      },
+    ], `${actionLabel} ${singular}: ${commitTitle}`);
 
     return json({
       ok: true,
       path,
-      sha: response.content?.sha || "",
+      sha: response.sha || "",
     });
   } catch (err) {
     return error(err.message, 500);

@@ -795,6 +795,7 @@ function collectFormData() {
   return {
     fields,
     body: String(formData.get("body") || "").trim(),
+    uploads: [],
   };
 }
 
@@ -805,6 +806,7 @@ async function processPendingFieldImages(payload) {
   }
 
   const fields = { ...payload.fields };
+  const uploads = [...(payload.uploads || [])];
 
   for (const pendingImage of pendingImages) {
     const currentValue = fields[pendingImage.fieldName];
@@ -816,37 +818,16 @@ async function processPendingFieldImages(payload) {
       continue;
     }
 
-    if (!pendingImage.uploadedPath) {
-      setMessage("Afbeeldingen uploaden...", "");
-      const base64 = await fileToBase64(pendingImage.file);
-      const uploadPayload = await api("/api/cms/upload", {
-        method: "POST",
-        body: JSON.stringify({
-          filename: pendingImage.file.name,
-          mimeType: pendingImage.file.type,
-          base64,
-          type: state.activeView,
-          path: state.currentItem?.path || "",
-          fields,
-        }),
-      });
-
-      pendingImage.uploadedPath = uploadPayload.path;
-
-      if (!state.currentItem && uploadPayload.itemPath) {
-        state.currentItem = {
-          path: uploadPayload.itemPath,
-          sha: "",
-          fields: {},
-          body: "",
-          type: state.activeView,
-        };
-        elements.editorMeta.innerHTML = `<div class="meta-chip">Nieuw bestand: ${uploadPayload.itemPath}</div>`;
-        elements.editorMeta.classList.remove("hidden");
-      }
-    }
-
-    fields[pendingImage.fieldName] = pendingImage.uploadedPath;
+    setMessage("Afbeeldingen voorbereiden voor opslaan...", "");
+    const token = `__CMS_UPLOAD_${crypto.randomUUID()}__`;
+    const base64 = await fileToBase64(pendingImage.file);
+    uploads.push({
+      token,
+      filename: pendingImage.file.name,
+      mimeType: pendingImage.file.type,
+      base64,
+    });
+    fields[pendingImage.fieldName] = token;
 
     if (pendingImage.objectUrl) {
       URL.revokeObjectURL(pendingImage.objectUrl);
@@ -854,7 +835,7 @@ async function processPendingFieldImages(payload) {
     delete state.pendingFieldImages[pendingImage.fieldName];
   }
 
-  return { ...payload, fields };
+  return { ...payload, fields, uploads };
 }
 
 async function processPendingEditorImages(payload) {
@@ -863,6 +844,7 @@ async function processPendingEditorImages(payload) {
   }
 
   let body = payload.body;
+  const uploads = [...(payload.uploads || [])];
   const remainingImages = [];
 
   for (const pendingImage of state.pendingEditorImages) {
@@ -873,42 +855,24 @@ async function processPendingEditorImages(payload) {
       continue;
     }
 
-    if (!pendingImage.uploadedPath) {
-      setMessage("Blogafbeeldingen uploaden...", "");
-      const base64 = await fileToBase64(pendingImage.file);
-      const uploadPayload = await api("/api/cms/upload", {
-        method: "POST",
-        body: JSON.stringify({
-          filename: pendingImage.file.name,
-          mimeType: pendingImage.file.type,
-          base64,
-          type: state.activeView,
-          path: state.currentItem?.path || "",
-          fields: payload.fields,
-        }),
-      });
+    const token = `__CMS_UPLOAD_${crypto.randomUUID()}__`;
+    setMessage("Blogafbeeldingen voorbereiden voor opslaan...", "");
+    const base64 = await fileToBase64(pendingImage.file);
+    uploads.push({
+      token,
+      filename: pendingImage.file.name,
+      mimeType: pendingImage.file.type,
+      base64,
+    });
+    body = body.split(pendingImage.objectUrl).join(token);
 
-      pendingImage.uploadedPath = uploadPayload.path;
-
-      if (!state.currentItem && uploadPayload.itemPath) {
-        state.currentItem = {
-          path: uploadPayload.itemPath,
-          sha: "",
-          fields: {},
-          body: "",
-          type: state.activeView,
-        };
-        elements.editorMeta.innerHTML = `<div class="meta-chip">Nieuw bestand: ${uploadPayload.itemPath}</div>`;
-        elements.editorMeta.classList.remove("hidden");
-      }
+    if (pendingImage.objectUrl) {
+      URL.revokeObjectURL(pendingImage.objectUrl);
     }
-
-    body = body.split(pendingImage.objectUrl).join(pendingImage.uploadedPath);
-    remainingImages.push(pendingImage);
   }
 
   state.pendingEditorImages = remainingImages;
-  return { ...payload, body };
+  return { ...payload, body, uploads };
 }
 
 function validatePayload(payload) {
@@ -1050,6 +1014,7 @@ elements.editorForm.addEventListener("submit", async (event) => {
         sha: state.currentItem?.sha || "",
         fields: payload.fields,
         body: payload.body,
+        uploads: payload.uploads || [],
       }),
     });
 
