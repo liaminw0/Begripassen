@@ -153,6 +153,55 @@ function resolveImagePreviewUrl(rawValue, itemPath = "") {
   return `${publicBase}${trimSlashes(value)}`;
 }
 
+function getItemPublicBase(itemPath = "") {
+  if (!itemPath || !/\/index\.md$/.test(itemPath)) {
+    return "";
+  }
+
+  return `/${trimSlashes(itemPath.replace(/^content\//, "").replace(/\/index\.md$/, ""))}/`;
+}
+
+function escapeRegExp(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function expandEditorBodyAssetUrls(markdown, itemPath = "") {
+  const publicBase = getItemPublicBase(itemPath);
+  if (!publicBase) {
+    return markdown;
+  }
+
+  return String(markdown || "")
+    .replace(/(!\[[^\]]*]\()([^)\s]+)(\))/g, (match, before, url, after) => {
+      return `${before}${resolveImagePreviewUrl(url, itemPath)}${after}`;
+    })
+    .replace(/(<img\b[^>]*\bsrc=["'])([^"']+)(["'][^>]*>)/gi, (match, before, url, after) => {
+      return `${before}${resolveImagePreviewUrl(url, itemPath)}${after}`;
+    });
+}
+
+function collapseEditorBodyAssetUrls(markdown, itemPath = "") {
+  const publicBase = getItemPublicBase(itemPath);
+  if (!publicBase) {
+    return markdown;
+  }
+
+  const escapedBase = escapeRegExp(publicBase);
+  const escapedOriginBase = escapeRegExp(`${window.location.origin}${publicBase}`);
+  const replacer = (url) =>
+    url
+      .replace(new RegExp(`^${escapedOriginBase}`), "")
+      .replace(new RegExp(`^${escapedBase}`), "");
+
+  return String(markdown || "")
+    .replace(/(!\[[^\]]*]\()([^)\s]+)(\))/g, (match, before, url, after) => {
+      return `${before}${replacer(url)}${after}`;
+    })
+    .replace(/(<img\b[^>]*\bsrc=["'])([^"']+)(["'][^>]*>)/gi, (match, before, url, after) => {
+      return `${before}${replacer(url)}${after}`;
+    });
+}
+
 function setMessage(message, tone = "") {
   elements.editorMessage.textContent = message || "";
   elements.editorMessage.className = tone ? `form-message ${tone}` : "form-message";
@@ -405,7 +454,7 @@ function initializeToastEditor() {
 
   const editor = new window.toastui.Editor({
     el: host,
-    initialValue: textarea.value || "",
+    initialValue: expandEditorBodyAssetUrls(textarea.value || "", state.currentItem?.path || ""),
     initialEditType: "wysiwyg",
     previewStyle: "vertical",
     height: "540px",
@@ -772,7 +821,7 @@ function collectFormData() {
   if (state.editorInstance && state.activeView === "blogs") {
     const bodyField = elements.editorFields.querySelector('textarea[name="body"]');
     if (bodyField) {
-      bodyField.value = state.editorInstance.getMarkdown();
+      bodyField.value = collapseEditorBodyAssetUrls(state.editorInstance.getMarkdown(), state.currentItem?.path || "");
     }
   }
 
