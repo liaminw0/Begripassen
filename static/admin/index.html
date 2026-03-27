@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="nl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>BEGR!P Admin</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/admin/styles.css" />
+  </head>
+  <body>
+    <div class="cms-shell">
+      <aside class="cms-sidebar">
+        <a class="cms-brand" href="/">
+          <span class="cms-brand-mark">BEGR!P</span>
+          <span class="cms-brand-copy">Team CMS</span>
+        </a>
+        <div class="cms-sidebar-copy">
+          <h1>Inhoud beheren</h1>
+          <p>Maak nieuwe events en blogposts, werk homepage-teksten bij en upload beelden zonder losse markdownbestanden te openen.</p>
+        </div>
+        <nav class="cms-nav">
+          <button type="button" data-view="events" class="is-active">Events</button>
+          <button type="button" data-view="blogs">Blogs</button>
+          <button type="button" data-view="home">Homepage</button>
+        </nav>
+        <div class="cms-sidebar-footer">
+          <button id="logout-button" type="button" class="secondary hidden">Uitloggen</button>
+        </div>
+      </aside>
+
+      <main class="cms-main">
+        <section id="login-panel" class="panel panel-login">
+          <div class="login-card">
+            <p class="eyebrow">BEGR!P Team</p>
+            <h2>Inloggen op de redactie</h2>
+            <p>Gebruik het gedeelde teamwachtwoord. Het GitHub-token en andere secrets blijven aan de serverkant in Cloudflare.</p>
+            <form id="login-form">
+              <label>
+                Wachtwoord
+                <input id="password-input" type="password" name="password" autocomplete="current-password" required />
+              </label>
+              <button type="submit">Inloggen</button>
+            </form>
+            <p id="login-error" class="form-error"></p>
+          </div>
+        </section>
+
+        <section id="dashboard-panel" class="panel hidden">
+          <header class="panel-header">
+            <div>
+              <p class="eyebrow" id="view-eyebrow">Events</p>
+              <h2 id="view-title">Nieuwe items publiceren</h2>
+            </div>
+            <button id="new-item-button" type="button">Nieuw item</button>
+          </header>
+
+          <div class="dashboard-grid">
+            <section class="panel-card list-card">
+              <div class="list-toolbar">
+                <h3 id="list-title">Bestaande items</h3>
+                <button id="refresh-button" type="button" class="secondary">Vernieuwen</button>
+              </div>
+              <div id="content-list" class="content-list"></div>
+            </section>
+
+            <section class="panel-card editor-card">
+              <form id="editor-form" class="editor-form">
+                <div id="editor-meta" class="hidden"></div>
+                <div id="editor-fields" class="editor-fields"></div>
+                <div class="editor-actions">
+                  <button type="submit">Opslaan</button>
+                  <button id="reset-button" type="button" class="secondary">Nieuw leeg formulier</button>
+                </div>
+                <p id="editor-message" class="form-message"></p>
+              </form>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <template id="list-item-template">
+      <article class="content-list-item">
+        <div>
+          <p class="list-item-eyebrow"></p>
+          <h4></h4>
+          <p class="list-item-summary"></p>
+        </div>
+        <button type="button" class="secondary list-item-action">Bewerken</button>
+      </article>
+    </template>
+
+    <script src="/admin/app.js" defer></script>
+  </body>
+</html>

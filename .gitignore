@@ -1,2 +1,5 @@
 public/
-
+.hugo_build.lock
+.dev.vars
+.dev.vars.*
+.wrangler/
