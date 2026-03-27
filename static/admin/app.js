@@ -36,27 +36,64 @@ const viewConfig = {
     listTitle: "Homepagina",
     buttonLabel: "Homepagina openen",
     fields: [
-      { name: "heading", label: "Hoofdtekst", type: "textarea", rows: 4, required: true },
-      { name: "about", label: "Over ons", type: "textarea", rows: 4, required: true },
-      { name: "about_image", label: "Over ons afbeelding", type: "image" },
-      { name: "about_link_text", label: "Over ons knoptekst", type: "text" },
-      { name: "about_link_url", label: "Over ons knoplink", type: "url" },
-      { name: "blog", label: "Blog intro", type: "textarea", rows: 4, required: true },
-      { name: "newsletter", label: "Nieuwsbrief intro", type: "textarea", rows: 4, required: true },
-      { name: "contact", label: "Contact intro", type: "textarea", rows: 4, required: true },
-      { name: "support", label: "Steun ons intro", type: "textarea", rows: 4, required: true },
-      { name: "contact_phone_label", label: "Telefoon label", type: "text", layout: "third" },
-      { name: "contact_phone", label: "Telefoonnummer", type: "text", layout: "third" },
-      { name: "contact_phone_link", label: "Telefoon link", type: "url", layout: "third" },
-      { name: "contact_email_label", label: "E-mail label", type: "text", layout: "third" },
-      { name: "contact_email", label: "E-mailadres", type: "text", layout: "third" },
-      { name: "contact_email_link", label: "E-mail link", type: "url", layout: "third" },
-      { name: "contact_instagram_label", label: "Instagram label", type: "text", layout: "third" },
-      { name: "contact_instagram_handle", label: "Instagram naam", type: "text", layout: "third" },
-      { name: "contact_instagram_url", label: "Instagram link", type: "url", layout: "third" },
+      { name: "heading", label: "Hoofdtekst", type: "textarea", rows: 4, required: true, group: "intro" },
+      { name: "about", label: "Over ons", type: "textarea", rows: 4, required: true, group: "about" },
+      { name: "about_image", label: "Over ons afbeelding", type: "image", group: "about" },
+      { name: "about_link_text", label: "Over ons knoptekst", type: "text", group: "about" },
+      { name: "about_link_url", label: "Over ons knoplink", type: "url", group: "about" },
+      { name: "blog", label: "Blog intro", type: "textarea", rows: 4, required: true, group: "blog" },
+      { name: "newsletter", label: "Nieuwsbrief intro", type: "textarea", rows: 4, required: true, group: "newsletter" },
+      { name: "support", label: "Steun ons intro", type: "textarea", rows: 4, required: true, group: "support" },
+      { name: "contact", label: "Contact intro", type: "textarea", rows: 4, required: true, group: "contact" },
+      { name: "contact_phone_label", label: "Telefoon label", type: "text", layout: "third", group: "contact" },
+      { name: "contact_phone", label: "Telefoonnummer", type: "text", layout: "third", group: "contact" },
+      { name: "contact_email_label", label: "E-mail label", type: "text", layout: "third", group: "contact" },
+      { name: "contact_email", label: "E-mailadres", type: "text", layout: "third", group: "contact" },
+      { name: "contact_instagram_label", label: "Instagram label", type: "text", layout: "third", group: "contact" },
+      { name: "contact_instagram_handle", label: "Instagram naam", type: "text", layout: "third", group: "contact" },
+      { name: "contact_instagram_url", label: "Instagram link", type: "url", layout: "third", group: "contact" },
     ],
   },
 };
+
+const homeEditorSections = [
+  {
+    id: "intro",
+    eyebrow: "Intro",
+    title: "Bovenaan de pagina",
+    description: "De eerste tekst die bezoekers zien wanneer ze op de homepagina landen.",
+  },
+  {
+    id: "about",
+    eyebrow: "Over Ons",
+    title: "Uitleg en beeld",
+    description: "Tekst, afbeelding en knop voor het blok waarin BEGR!P wordt uitgelegd.",
+  },
+  {
+    id: "blog",
+    eyebrow: "Blog",
+    title: "Blogsectie",
+    description: "Korte introductie boven de lijst met blogartikelen.",
+  },
+  {
+    id: "newsletter",
+    eyebrow: "Nieuwsbrief",
+    title: "Nieuwsbriefblok",
+    description: "De tekst die bezoekers uitnodigt om zich aan te melden.",
+  },
+  {
+    id: "support",
+    eyebrow: "Steun Ons",
+    title: "Steun ons",
+    description: "De introtekst boven de vaste acties om BEGR!P te helpen.",
+  },
+  {
+    id: "contact",
+    eyebrow: "Contact",
+    title: "Contactgegevens",
+    description: "Inleidende tekst en de zichtbare contactinformatie op de homepagina en in de footer.",
+  },
+];
 
 const state = {
   activeView: "home",
@@ -112,7 +149,7 @@ function setLoginError(message) {
 function updateSidebarCopy() {
   if (state.authenticated) {
     elements.sidebarTitle.textContent = "Inhoud beheren";
-    elements.sidebarCopy.textContent = "Maak nieuwe events en blogposts, werk homepage-teksten bij en upload beelden zonder losse markdownbestanden te openen.";
+    elements.sidebarCopy.textContent = "Maak nieuwe events en blogposts, werk homepage-teksten bij en upload beelden.";
     return;
   }
 
@@ -279,10 +316,7 @@ function applyFieldVisibilityRules() {
   updateSignupLinkVisibility();
 }
 
-function renderEditor(item = null) {
-  state.currentItem = item;
-  setEditorMode("editing");
-  const config = viewConfig[state.activeView];
+function renderFieldRows(fields, item) {
   const gridMarkup = [];
   let currentRow = [];
   let currentLayout = "pair";
@@ -296,7 +330,7 @@ function renderEditor(item = null) {
     currentRow = [];
   };
 
-  for (const field of config.fields) {
+  for (const field of fields) {
     const fieldValue = field.name === "body" ? item?.body || "" : item?.fields?.[field.name] || "";
     const markup = buildFieldMarkup(field, fieldValue);
     const isBlockField = field.type === "textarea" || field.type === "markdown" || field.type === "image" || field.type === "checkbox";
@@ -322,8 +356,44 @@ function renderEditor(item = null) {
   }
 
   flushCurrentRow();
+  return gridMarkup.join("");
+}
 
-  elements.editorFields.innerHTML = gridMarkup.join("");
+function renderHomeEditor(item) {
+  const sectionMarkup = homeEditorSections
+    .map((section) => {
+      const sectionFields = viewConfig.home.fields.filter((field) => field.group === section.id);
+      if (!sectionFields.length) {
+        return "";
+      }
+
+      return `
+        <section class="editor-section-card">
+          <div class="editor-section-head">
+            <p class="eyebrow">${section.eyebrow}</p>
+            <h3>${section.title}</h3>
+            <p>${section.description}</p>
+          </div>
+          <div class="editor-section-fields">
+            ${renderFieldRows(sectionFields, item)}
+          </div>
+        </section>
+      `;
+    })
+    .join("");
+
+  elements.editorFields.innerHTML = `<div class="editor-section-stack">${sectionMarkup}</div>`;
+}
+
+function renderEditor(item = null) {
+  state.currentItem = item;
+  setEditorMode("editing");
+  const config = viewConfig[state.activeView];
+  if (state.activeView === "home") {
+    renderHomeEditor(item);
+  } else {
+    elements.editorFields.innerHTML = renderFieldRows(config.fields, item);
+  }
   elements.editorMeta.innerHTML = item?.path ? `<div class="meta-chip">Bewerkt bestand: ${item.path}</div>` : "";
   elements.editorMeta.classList.toggle("hidden", !item?.path);
   setMessage(item ? "Bewerking geladen." : "");

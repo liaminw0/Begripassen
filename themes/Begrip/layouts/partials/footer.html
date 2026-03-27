@@ -24,10 +24,10 @@
       <a href="{{ . }}" aria-label="Instagram"><i class="fa-brands fa-instagram"></i><span>{{ $.Params.contact_instagram_handle | default "@begripassen" }}</span></a>
       {{ end }}
       {{ with .Params.contact_email }}
-      <a href="{{ $.Params.contact_email_link | default (printf "mailto:%s" .) }}" aria-label="E-mail"><i class="fa-solid fa-envelope"></i><span>{{ . }}</span></a>
+      <a href="mailto:{{ . }}" aria-label="E-mail"><i class="fa-solid fa-envelope"></i><span>{{ . }}</span></a>
       {{ end }}
       {{ with .Params.contact_phone }}
-      <a href="{{ $.Params.contact_phone_link | default (printf "tel:%s" .) }}" aria-label="Telefoon"><i class="fa-solid fa-phone"></i><span>{{ . }}</span></a>
+      <a href="tel:{{ . }}" aria-label="Telefoon"><i class="fa-solid fa-phone"></i><span>{{ . }}</span></a>
       {{ end }}
     </div>
 
