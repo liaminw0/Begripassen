@@ -36,7 +36,6 @@ const viewConfig = {
     listTitle: "Homepagina",
     buttonLabel: "Homepagina openen",
     fields: [
-      { name: "title", label: "Titel", type: "text", required: true },
       { name: "heading", label: "Hoofdtekst", type: "textarea", rows: 4, required: true },
       { name: "about", label: "Over ons", type: "textarea", rows: 4, required: true },
       { name: "about_image", label: "Over ons afbeelding", type: "image" },
@@ -46,17 +45,15 @@ const viewConfig = {
       { name: "newsletter", label: "Nieuwsbrief intro", type: "textarea", rows: 4, required: true },
       { name: "contact", label: "Contact intro", type: "textarea", rows: 4, required: true },
       { name: "support", label: "Steun ons intro", type: "textarea", rows: 4, required: true },
-      { name: "support_action_primary_text", label: "Steun ons knop 1 tekst", type: "text" },
-      { name: "support_action_primary_url", label: "Steun ons knop 1 link", type: "url" },
-      { name: "support_action_secondary_text", label: "Steun ons knop 2 tekst", type: "text" },
-      { name: "support_action_secondary_url", label: "Steun ons knop 2 link", type: "url" },
-      { name: "contact_phone_label", label: "Telefoon label", type: "text" },
-      { name: "contact_phone", label: "Telefoonnummer", type: "text" },
-      { name: "contact_email_label", label: "E-mail label", type: "text" },
-      { name: "contact_email", label: "E-mailadres", type: "text" },
-      { name: "contact_instagram_label", label: "Instagram label", type: "text" },
-      { name: "contact_instagram_handle", label: "Instagram naam", type: "text" },
-      { name: "contact_instagram_url", label: "Instagram link", type: "url" },
+      { name: "contact_phone_label", label: "Telefoon label", type: "text", layout: "third" },
+      { name: "contact_phone", label: "Telefoonnummer", type: "text", layout: "third" },
+      { name: "contact_phone_link", label: "Telefoon link", type: "url", layout: "third" },
+      { name: "contact_email_label", label: "E-mail label", type: "text", layout: "third" },
+      { name: "contact_email", label: "E-mailadres", type: "text", layout: "third" },
+      { name: "contact_email_link", label: "E-mail link", type: "url", layout: "third" },
+      { name: "contact_instagram_label", label: "Instagram label", type: "text", layout: "third" },
+      { name: "contact_instagram_handle", label: "Instagram naam", type: "text", layout: "third" },
+      { name: "contact_instagram_url", label: "Instagram link", type: "url", layout: "third" },
     ],
   },
 };
@@ -247,7 +244,7 @@ function buildFieldMarkup(field, value = "") {
     field.type === "datetime-local" ? toInputDateTime(value) : field.type === "date" ? toInputDate(value) : value;
 
   return `
-    <label data-field-wrapper="${field.name}">
+    <label data-field-wrapper="${field.name}" data-field-layout="${field.layout || ""}">
       ${field.label}
       <input type="${field.type}" name="${field.name}" value="${escapeHtml(normalizedValue)}" ${field.required ? "required" : ""} />
     </label>
@@ -286,33 +283,45 @@ function renderEditor(item = null) {
   state.currentItem = item;
   setEditorMode("editing");
   const config = viewConfig[state.activeView];
-  const fieldsMarkup = config.fields.map((field) => {
-    const fieldValue = field.name === "body" ? item?.body || "" : item?.fields?.[field.name] || "";
-    return buildFieldMarkup(field, fieldValue);
-  });
-
   const gridMarkup = [];
   let currentRow = [];
+  let currentLayout = "pair";
 
-  for (const field of fieldsMarkup) {
-    if (field.includes("textarea") || field.includes("data-image-field") || field.includes("checkbox-field")) {
-      if (currentRow.length) {
-        gridMarkup.push(`<div class="field-grid">${currentRow.join("")}</div>`);
-        currentRow = [];
-      }
-      gridMarkup.push(field);
+  const flushCurrentRow = () => {
+    if (!currentRow.length) {
+      return;
+    }
+    const gridClass = currentLayout === "third" ? "field-grid field-grid-third" : "field-grid";
+    gridMarkup.push(`<div class="${gridClass}">${currentRow.join("")}</div>`);
+    currentRow = [];
+  };
+
+  for (const field of config.fields) {
+    const fieldValue = field.name === "body" ? item?.body || "" : item?.fields?.[field.name] || "";
+    const markup = buildFieldMarkup(field, fieldValue);
+    const isBlockField = field.type === "textarea" || field.type === "markdown" || field.type === "image" || field.type === "checkbox";
+    const layout = field.layout || "pair";
+
+    if (isBlockField) {
+      flushCurrentRow();
+      gridMarkup.push(markup);
+      currentLayout = "pair";
     } else {
-      currentRow.push(field);
-      if (currentRow.length === 2) {
-        gridMarkup.push(`<div class="field-grid">${currentRow.join("")}</div>`);
-        currentRow = [];
+      if (currentRow.length && currentLayout !== layout) {
+        flushCurrentRow();
+      }
+
+      currentLayout = layout;
+      currentRow.push(markup);
+      const maxColumns = layout === "third" ? 3 : 2;
+
+      if (currentRow.length === maxColumns) {
+        flushCurrentRow();
       }
     }
   }
 
-  if (currentRow.length) {
-    gridMarkup.push(`<div class="field-grid">${currentRow.join("")}</div>`);
-  }
+  flushCurrentRow();
 
   elements.editorFields.innerHTML = gridMarkup.join("");
   elements.editorMeta.innerHTML = item?.path ? `<div class="meta-chip">Bewerkt bestand: ${item.path}</div>` : "";

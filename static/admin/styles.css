@@ -281,6 +281,10 @@ textarea {
   gap: 1rem;
 }
 
+.field-grid-third {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .checkbox-field {
   display: flex;
   align-items: center;
@@ -359,7 +363,8 @@ textarea {
 @media (max-width: 980px) {
   .cms-shell,
   .dashboard-grid,
-  .field-grid {
+  .field-grid,
+  .field-grid-third {
     grid-template-columns: 1fr;
   }
 
