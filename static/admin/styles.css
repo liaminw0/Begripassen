@@ -244,6 +244,7 @@ textarea {
   display: grid;
   gap: 1rem;
   padding: 0.35rem;
+  border: 1px solid var(--line);
   border-radius: 28px;
   background: var(--surface-muted);
 }
