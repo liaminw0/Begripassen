@@ -1,6 +1,10 @@
 {{ define "main" }}
 <main>
+  {{ $defaultImage := "images/placeholder.png" | relURL }}
   {{ $heroImage := "" }}
+  {{ if or (eq .Section "events") (eq .Section "blogs") }}
+    {{ $heroImage = $defaultImage }}
+  {{ end }}
   {{ with .Params.image }}
     {{ if hasPrefix . "/" }}
       {{ $heroImage = . | relURL }}
