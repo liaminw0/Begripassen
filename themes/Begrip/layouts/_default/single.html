@@ -61,11 +61,13 @@
         {{ if and .Params.show_signup .Params.signup_link }}
         <a href="{{ .Params.signup_link | safeURL }}" target="_blank" rel="noopener noreferrer">Aanmelden</a>
         {{ end }}
-        <a href="{{ "/events/" | relURL }}">Terug naar events</a>
+        <a href="{{ "/events/" | relURL }}" class="single-back-link">Terug naar events</a>
+        {{ else if eq .Section "blogs" }}
+        <a href="{{ "/blogs/" | relURL }}" class="single-back-link">Terug naar blogs</a>
         {{ else }}
-        <a href="{{ printf "/%s/" .Section | relURL }}">Terug naar overzicht</a>
+        <a href="{{ printf "/%s/" .Section | relURL }}" class="single-back-link">Terug naar overzicht</a>
         {{ end }}
-        <a href="{{ "/" | relURL }}#heading-container">Naar home</a>
+        <a href="{{ "/" | relURL }}#heading-container" class="single-back-link">Terug naar home</a>
       </div>
     </div>
   </div>

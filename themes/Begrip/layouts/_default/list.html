@@ -24,7 +24,7 @@
           <p>{{ len $upcoming }}</p>
         </div>
         {{ if gt (len $upcoming) 0 }}
-        <ul class="listpage-items events-grid">
+        <ul class="listpage-items events-grid{{ if eq (len $upcoming) 1 }} events-grid-single{{ end }}">
         {{ range $upcoming.ByDate }}
           <li class="event-item">
             <a class="event-link" href="{{ .RelPermalink }}">
@@ -58,7 +58,7 @@
           <p>{{ len $past }}</p>
         </div>
         {{ if gt (len $past) 0 }}
-        <ul class="listpage-items events-grid">
+        <ul class="listpage-items events-grid{{ if eq (len $past) 1 }} events-grid-single{{ end }}">
         {{ range $past.ByDate.Reverse }}
           <li class="event-item">
             <a class="event-link" href="{{ .RelPermalink }}">

@@ -126,6 +126,9 @@ main {
 }
 
 .events-listing {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
   padding-top: 0.2rem;
   padding-bottom: 4rem;
 }
@@ -319,10 +322,6 @@ main {
   color: rgba(247, 251, 244, 0.95);
 }
 
-.events-group + .events-group {
-  margin-top: 2rem;
-}
-
 .events-group-head {
   margin-bottom: 0.8rem;
   display: flex;
@@ -368,6 +367,14 @@ main {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+}
+
+.events-grid-single {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.events-grid-single .event-item {
+  max-width: 34rem;
 }
 
 .event-item {
@@ -565,10 +572,6 @@ main {
   .blogs-listing,
   #list-page .listpage-items {
     padding-bottom: 2.5rem;
-  }
-
-  .events-group + .events-group {
-    margin-top: 1.6rem;
   }
 
   .event-link {

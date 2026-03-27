@@ -91,6 +91,7 @@ const state = {
   authenticated: false,
   currentItem: null,
   editorMode: "empty",
+  editors: {},
   lists: {
     events: [],
     blogs: [],
@@ -267,10 +268,21 @@ function buildFieldMarkup(field, value = "") {
     `;
   }
 
-  if (field.type === "textarea" || field.type === "markdown") {
-    const rows = field.rows || (field.type === "markdown" ? 12 : 4);
+  if (field.type === "textarea") {
+    const rows = field.rows || 4;
     return `
       <label>
+        ${field.label}
+        <textarea name="${field.name}" rows="${rows}" ${field.required ? "required" : ""}>${escapeHtml(value)}</textarea>
+      </label>
+    `;
+  }
+
+  if (field.type === "markdown") {
+    const rows = field.rows || 12;
+    const blogEditorClass = state.activeView === "blogs" && field.name === "body" ? ' class="easymde-field"' : "";
+    return `
+      <label${blogEditorClass}>
         ${field.label}
         <textarea name="${field.name}" rows="${rows}" ${field.required ? "required" : ""}>${escapeHtml(value)}</textarea>
       </label>
@@ -333,6 +345,54 @@ function applyFieldVisibilityRules() {
 
   signupToggle.addEventListener("change", updateSignupLinkVisibility);
   updateSignupLinkVisibility();
+}
+
+function destroyEditors() {
+  for (const editor of Object.values(state.editors)) {
+    editor.toTextArea();
+  }
+  state.editors = {};
+}
+
+function initializeEasyMDE() {
+  destroyEditors();
+
+  if (state.activeView !== "blogs" || typeof EasyMDE === "undefined") {
+    return;
+  }
+
+  const textarea = elements.editorFields.querySelector('textarea[name="body"]');
+  if (!textarea) {
+    return;
+  }
+
+  state.editors.body = new EasyMDE({
+    element: textarea,
+    autoDownloadFontAwesome: false,
+    spellChecker: false,
+    status: false,
+    forceSync: true,
+    sideBySideFullscreen: false,
+    placeholder: "Schrijf hier je blog...",
+    toolbar: [
+      "bold",
+      "italic",
+      "heading",
+      "|",
+      "quote",
+      "unordered-list",
+      "ordered-list",
+      "|",
+      "link",
+      "image",
+      "|",
+      "preview",
+      "side-by-side",
+      "fullscreen",
+      "|",
+      "guide",
+    ],
+  });
 }
 
 function renderFieldRows(fields, item) {
@@ -426,6 +486,7 @@ function renderHomeEditor(item) {
 }
 
 function renderEditor(item = null) {
+  destroyEditors();
   state.currentItem = item;
   setEditorMode("editing");
   const config = viewConfig[state.activeView];
@@ -527,6 +588,7 @@ function renderEditor(item = null) {
   }
 
   applyFieldVisibilityRules();
+  initializeEasyMDE();
 }
 
 function fileToBase64(file) {

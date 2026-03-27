@@ -188,7 +188,7 @@ document.addEventListener("DOMContentLoaded", function() {
   const noEventsMessage = document.getElementById('noEventsMessage');
   const eventsList = document.querySelectorAll('.events-list a');
 
-  if (!monthDisplay || !prevButton || !nextButton || !noEventsMessage || !eventsList.length) {
+  if (!monthDisplay || !prevButton || !nextButton || !noEventsMessage) {
     return;
   }
   

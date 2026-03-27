@@ -363,6 +363,40 @@ textarea {
   margin: 0;
 }
 
+.easymde-field .EasyMDEContainer {
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.easymde-field .editor-toolbar {
+  border: 0;
+  background: rgba(237, 243, 231, 0.95);
+}
+
+.easymde-field .editor-toolbar::before,
+.easymde-field .editor-toolbar::after {
+  display: none;
+}
+
+.easymde-field .CodeMirror {
+  min-height: 24rem;
+  border-top: 1px solid rgba(43, 56, 35, 0.1);
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text);
+}
+
+.easymde-field .CodeMirror-scroll {
+  min-height: 24rem;
+}
+
+.easymde-field .editor-preview,
+.easymde-field .editor-preview-side {
+  background: rgba(247, 251, 244, 0.94);
+  color: var(--text);
+}
+
 .editor-actions {
   display: flex;
   flex-wrap: wrap;
