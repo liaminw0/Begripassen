@@ -1,7 +1,7 @@
 ---
 title: Jong Graan @ Annie's | REVIVAL
 date: 2024-09-26T20:00:00.000Z
-author: Guy
-publishdate: 2023-03-18
+organiser: Guy
+summary: De derde editie van Jong Graan bij club Annie's.
 ---
-De derde editie van Jong Gaan bij club **Annie's**
+De derde editie van Jong Graan bij club **Annie's**.

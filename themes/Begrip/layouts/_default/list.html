@@ -38,6 +38,8 @@
                 <p class="event-full-date">{{ .Date.Format "2 January 2006" }}</p>
                 {{ with .Summary }}
                 <p class="event-summary">{{ . | plainify }}</p>
+                {{ else }}
+                <p class="event-summary">{{ .Plain | truncate 140 }}</p>
                 {{ end }}
               </div>
               <span class="event-cta">Bekijk</span>
@@ -70,6 +72,8 @@
                 <p class="event-full-date">{{ .Date.Format "2 January 2006" }}</p>
                 {{ with .Summary }}
                 <p class="event-summary">{{ . | plainify }}</p>
+                {{ else }}
+                <p class="event-summary">{{ .Plain | truncate 140 }}</p>
                 {{ end }}
               </div>
               <span class="event-cta">Bekijk</span>

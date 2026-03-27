@@ -2,6 +2,7 @@
 title: De eerste nacht van BEGR!P
 date: 2024-05-30
 author: Liam Inwards
+summary: Een terugblik op de eerste Nacht van BEGR!P in Annie's Club.
 ---
 # Lieve luitjes 😊,
 

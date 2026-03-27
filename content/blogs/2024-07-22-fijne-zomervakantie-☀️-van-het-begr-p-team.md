@@ -2,6 +2,7 @@
 title: Fijne zomervakantie ☀️ van het BEGR!P team!
 date: 2024-07-17T13:00:00.000Z
 author: Benne Setz
+summary: Een zomerupdate over samen eten, JongGraan en de volgende fase van BEGR!P.
 ---
 ## Lieve luitjes,
 

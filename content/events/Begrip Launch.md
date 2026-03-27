@@ -1,6 +1,7 @@
 ---
-title: Lancering BEGR!P 
+title: Lancering BEGR!P
 date: 2024-05-19
-publishdate: 2023-03-18
-author: Liam Inwards
+organiser: Liam Inwards
+summary: De officiele lancering van BEGR!P.
 ---
+De officiele lancering van BEGR!P.

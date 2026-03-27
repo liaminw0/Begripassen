@@ -2,6 +2,7 @@
 title: Top Idee? Kom ermee!
 date: 2024-04-25
 author: Liam Inwards
+summary: BEGR!P won 21.000 euro met het idee voor nieuwe evenementen in Assen.
 ---
 # 😆 Woehoe! 😆
 

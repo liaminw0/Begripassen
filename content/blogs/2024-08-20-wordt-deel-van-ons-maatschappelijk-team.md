@@ -2,6 +2,7 @@
 title: Word deel van ons maatschappelijk team!
 date: 2024-08-20
 author: Liam Inwards
+summary: Oproep om mee te doen aan het maatschappelijk team van BEGR!P.
 ---
 Wil jij iets betekenen voor een ander, maar weet je niet waar je moet beginnen? Sluit je dan aan bij ons maatschappelijk team!
 

@@ -247,6 +247,32 @@ export async function putRepoFileBase64(config, path, contentBase64, message, sh
   return response.json();
 }
 
+export async function deleteRepoFile(config, path, message, sha) {
+  const body = {
+    message,
+    branch: config.branch,
+    sha,
+  };
+
+  if (config.committerName && config.committerEmail) {
+    body.committer = {
+      name: config.committerName,
+      email: config.committerEmail,
+    };
+  }
+
+  const response = await githubRequest(
+    config,
+    `/repos/${config.owner}/${config.repo}/contents/${path}`,
+    {
+      method: "DELETE",
+      body: JSON.stringify(body),
+    }
+  );
+
+  return response.json();
+}
+
 function parseFrontmatterValue(rawValue) {
   const trimmed = rawValue.trim();
 

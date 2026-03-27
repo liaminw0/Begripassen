@@ -20,13 +20,13 @@
           <span class="cms-brand-copy">Team CMS</span>
         </a>
         <div class="cms-sidebar-copy">
-          <h1>Inhoud beheren</h1>
-          <p>Maak nieuwe events en blogposts, werk homepage-teksten bij en upload beelden zonder losse markdownbestanden te openen.</p>
+          <h1>Teamomgeving</h1>
+          <p>Log in om de website van BEGR!P bij te werken en nieuwe inhoud te publiceren.</p>
         </div>
         <nav class="cms-nav hidden" id="cms-nav">
-          <button type="button" data-view="events" class="is-active">Events</button>
+          <button type="button" data-view="home" class="is-active">Homepage</button>
+          <button type="button" data-view="events">Events</button>
           <button type="button" data-view="blogs">Blogs</button>
-          <button type="button" data-view="home">Homepage</button>
         </nav>
         <div class="cms-sidebar-footer">
           <button id="logout-button" type="button" class="secondary hidden">Uitloggen</button>
@@ -36,9 +36,9 @@
       <main class="cms-main">
         <section id="login-panel" class="panel panel-login">
           <div class="login-card">
-            <p class="eyebrow">BEGR!P Team</p>
-            <h2>Inloggen op de redactie</h2>
-            <p>Gebruik het gedeelde teamwachtwoord. Het GitHub-token en andere secrets blijven aan de serverkant in Cloudflare.</p>
+            <p class="eyebrow">BEGR!P Admin</p>
+            <h2>Log in om verder te gaan</h2>
+            <p>Gebruik het teamwachtwoord om de website te beheren.</p>
             <form id="login-form">
               <label>
                 Wachtwoord
@@ -60,7 +60,7 @@
           </header>
 
           <div class="dashboard-grid">
-            <section class="panel-card list-card">
+            <section class="panel-card list-card" id="list-card">
               <div class="list-toolbar">
                 <h3 id="list-title">Bestaande items</h3>
                 <button id="refresh-button" type="button" class="secondary">Vernieuwen</button>
@@ -79,6 +79,7 @@
                 <div id="editor-fields" class="editor-fields"></div>
                 <div class="editor-actions">
                   <button type="submit">Opslaan</button>
+                  <button id="delete-button" type="button" class="secondary hidden">Verwijderen</button>
                 </div>
                 <p id="editor-message" class="form-message"></p>
               </form>

@@ -10,7 +10,6 @@ const viewConfig = {
       { name: "location", label: "Locatie", type: "text" },
       { name: "organiser", label: "Organisator", type: "text" },
       { name: "image", label: "Omslagafbeelding", type: "image" },
-      { name: "summary", label: "Korte samenvatting", type: "textarea", rows: 3 },
       { name: "show_signup", label: "Aanmeldknop tonen", type: "checkbox" },
       { name: "signup_link", label: "Aanmeldlink", type: "url" },
       { name: "draft", label: "Concept", type: "checkbox" },
@@ -27,7 +26,6 @@ const viewConfig = {
       { name: "date", label: "Publicatiedatum", type: "date", required: true },
       { name: "author", label: "Auteur", type: "text" },
       { name: "image", label: "Omslagafbeelding", type: "image" },
-      { name: "summary", label: "Korte samenvatting", type: "textarea", rows: 3 },
       { name: "draft", label: "Concept", type: "checkbox" },
       { name: "body", label: "Inhoud", type: "markdown", required: true },
     ],
@@ -50,7 +48,7 @@ const viewConfig = {
 };
 
 const state = {
-  activeView: "events",
+  activeView: "home",
   authenticated: false,
   currentItem: null,
   editorMode: "empty",
@@ -68,6 +66,7 @@ const elements = {
   loginError: document.getElementById("login-error"),
   logoutButton: document.getElementById("logout-button"),
   nav: document.getElementById("cms-nav"),
+  listCard: document.getElementById("list-card"),
   contentList: document.getElementById("content-list"),
   editorEmpty: document.getElementById("editor-empty"),
   editorEmptyEyebrow: document.getElementById("editor-empty-eyebrow"),
@@ -77,6 +76,7 @@ const elements = {
   editorFields: document.getElementById("editor-fields"),
   editorMeta: document.getElementById("editor-meta"),
   editorMessage: document.getElementById("editor-message"),
+  deleteButton: document.getElementById("delete-button"),
   newItemButton: document.getElementById("new-item-button"),
   refreshButton: document.getElementById("refresh-button"),
   viewEyebrow: document.getElementById("view-eyebrow"),
@@ -100,6 +100,7 @@ function setEditorMode(mode) {
   const showForm = mode === "editing";
   elements.editorEmpty.classList.toggle("hidden", showForm);
   elements.editorForm.classList.toggle("hidden", !showForm);
+  elements.deleteButton.classList.toggle("hidden", !showForm || state.activeView === "home");
 }
 
 function showEmptyEditorState() {
@@ -112,8 +113,8 @@ function showEmptyEditorState() {
   elements.editorEmptyEyebrow.textContent = config.eyebrow;
 
   if (state.activeView === "home") {
-    elements.editorEmptyTitle.textContent = "Open de homepage-editor";
-    elements.editorEmptyCopy.textContent = "Klik links op de homepagekaart om de teksten te openen en daarna op te slaan.";
+    elements.editorEmptyTitle.textContent = "Homepage wordt geladen";
+    elements.editorEmptyCopy.textContent = "De homepage heeft geen losse lijstweergave nodig en opent direct in de editor.";
   } else {
     elements.editorEmptyTitle.textContent = "Kies eerst een item";
     elements.editorEmptyCopy.textContent = `Selecteer links een bestaand ${state.activeView === "events" ? "event" : "blogartikel"} of klik op "${config.buttonLabel}" om een nieuw item te openen.`;
@@ -207,8 +208,8 @@ function buildFieldMarkup(field, value = "") {
         ${field.label}
         <input type="text" name="${field.name}" value="${escapeHtml(value)}" placeholder="/images/uploads/voorbeeld.jpg" />
         <div class="upload-row">
-          <input type="file" accept="image/*" data-upload-input="${field.name}" />
-          <button type="button" class="secondary" data-upload-button="${field.name}">Upload bestand</button>
+          <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-upload-input="${field.name}" class="hidden-upload-input" />
+          <button type="button" class="secondary" data-upload-button="${field.name}">Kies en upload afbeelding</button>
         </div>
       </label>
     `;
@@ -263,29 +264,41 @@ function renderEditor(item = null) {
   setMessage(item ? "Bewerking geladen." : "");
 
   for (const button of elements.editorFields.querySelectorAll("[data-upload-button]")) {
-    button.addEventListener("click", async () => {
-      const fieldName = button.dataset.uploadButton;
-      const fileInput = elements.editorFields.querySelector(`[data-upload-input="${fieldName}"]`);
-      const targetInput = elements.editorFields.querySelector(`input[name="${fieldName}"]`);
+    const fieldName = button.dataset.uploadButton;
+    const fileInput = elements.editorFields.querySelector(`[data-upload-input="${fieldName}"]`);
+    const targetInput = elements.editorFields.querySelector(`input[name="${fieldName}"]`);
+
+    button.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", async () => {
       const file = fileInput.files[0];
 
       if (!file) {
-        setMessage("Kies eerst een afbeelding om te uploaden.", "error");
         return;
       }
 
-      setMessage("Afbeelding uploaden...", "");
-      const base64 = await fileToBase64(file);
-      const payload = await api("/api/cms/upload", {
-        method: "POST",
-        body: JSON.stringify({
-          filename: file.name,
-          mimeType: file.type,
-          base64,
-        }),
-      });
-      targetInput.value = payload.path;
-      setMessage("Afbeelding geüpload en ingevuld.", "success");
+      try {
+        setMessage("Afbeelding omzetten naar WebP...", "");
+        const webpFile = await convertImageToWebP(file);
+        setMessage("Afbeelding uploaden...", "");
+        const base64 = await fileToBase64(webpFile);
+        const payload = await api("/api/cms/upload", {
+          method: "POST",
+          body: JSON.stringify({
+            filename: webpFile.name,
+            mimeType: webpFile.type,
+            base64,
+          }),
+        });
+        targetInput.value = payload.path;
+        setMessage("Afbeelding geüpload als WebP en ingevuld.", "success");
+      } catch (err) {
+        setMessage(err.message, "error");
+      } finally {
+        fileInput.value = "";
+      }
     });
   }
 }
@@ -302,25 +315,67 @@ function fileToBase64(file) {
   });
 }
 
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    };
+    image.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("De gekozen afbeelding kon niet worden geopend."));
+    };
+    image.src = url;
+  });
+}
+
+async function convertImageToWebP(file) {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("Kies een geldige afbeelding.");
+  }
+
+  if (!["image/png", "image/jpeg", "image/webp", "image/gif"].includes(file.type)) {
+    throw new Error("Gebruik een PNG, JPG, GIF of WebP afbeelding.");
+  }
+
+  const image = await loadImageFromFile(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = image.naturalWidth || image.width;
+  canvas.height = image.naturalHeight || image.height;
+  const context = canvas.getContext("2d");
+
+  if (!context) {
+    throw new Error("De browser kon de afbeelding niet verwerken.");
+  }
+
+  context.drawImage(image, 0, 0);
+
+  const blob = await new Promise((resolve) => {
+    canvas.toBlob(resolve, "image/webp", 0.9);
+  });
+
+  if (!blob) {
+    throw new Error("De afbeelding kon niet naar WebP worden omgezet.");
+  }
+
+  const webpName = `${file.name.replace(/\.[^/.]+$/, "") || "afbeelding"}.webp`;
+  return new File([blob], webpName, { type: "image/webp" });
+}
+
 function renderList() {
   const config = viewConfig[state.activeView];
   elements.viewEyebrow.textContent = config.eyebrow;
   elements.viewTitle.textContent = config.title;
   elements.listTitle.textContent = config.listTitle;
   elements.newItemButton.textContent = config.buttonLabel;
+  elements.listCard.classList.toggle("hidden", state.activeView === "home");
+  elements.newItemButton.classList.toggle("hidden", state.activeView === "home");
+  elements.refreshButton.classList.toggle("hidden", state.activeView === "home");
 
   if (state.activeView === "home") {
-    elements.contentList.innerHTML = `
-      <article class="content-list-item">
-        <div>
-          <p class="list-item-eyebrow">Homepage copy</p>
-          <h4>content/_index.md</h4>
-          <p class="list-item-summary">Werk de hoofdteksten van de landingspagina bij.</p>
-        </div>
-        <button type="button" class="secondary" id="load-home-button">Openen</button>
-      </article>
-    `;
-    elements.contentList.querySelector("#load-home-button").addEventListener("click", () => loadHome());
+    elements.contentList.innerHTML = "";
     return;
   }
 
@@ -333,7 +388,7 @@ function renderList() {
   elements.contentList.innerHTML = "";
   for (const item of items) {
     const node = elements.itemTemplate.content.cloneNode(true);
-    node.querySelector(".list-item-eyebrow").textContent = [item.date, item.draft ? "concept" : "live"].filter(Boolean).join(" · ");
+    node.querySelector(".list-item-eyebrow").textContent = formatListMeta(item);
     node.querySelector("h4").textContent = item.title;
     node.querySelector(".list-item-summary").textContent = item.summary;
     node.querySelector(".list-item-action").addEventListener("click", () => loadItem(item.path));
@@ -358,11 +413,14 @@ async function refreshActiveView() {
   setMessage("");
   renderList();
 
-  if (state.activeView !== "home") {
-    const payload = await api(`/api/cms/items?type=${state.activeView}`, { method: "GET", headers: {} });
-    state.lists[state.activeView] = payload.items;
-    renderList();
+  if (state.activeView === "home") {
+    await loadHome();
+    return;
   }
+
+  const payload = await api(`/api/cms/items?type=${state.activeView}`, { method: "GET", headers: {} });
+  state.lists[state.activeView] = payload.items;
+  renderList();
 }
 
 async function loadItem(path) {
@@ -413,6 +471,41 @@ function validatePayload(payload) {
   }
 }
 
+function formatDutchDate(dateValue, withTime = false) {
+  if (!dateValue) {
+    return "";
+  }
+
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) {
+    return String(dateValue);
+  }
+
+  return new Intl.DateTimeFormat("nl-NL", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {}),
+  }).format(date);
+}
+
+function hasExplicitTime(dateValue) {
+  return typeof dateValue === "string" && dateValue.includes("T");
+}
+
+function formatListMeta(item) {
+  const parts = [];
+  const isEvent = item.type === "events";
+  const formattedDate = formatDutchDate(item.date, isEvent && hasExplicitTime(item.date));
+
+  if (formattedDate) {
+    parts.push(formattedDate);
+  }
+
+  parts.push(item.draft ? "concept" : "live");
+  return parts.join(" · ");
+}
+
 elements.loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   setLoginError("");
@@ -458,6 +551,33 @@ elements.newItemButton.addEventListener("click", async () => {
 
 elements.refreshButton.addEventListener("click", async () => {
   await refreshActiveView();
+});
+
+elements.deleteButton.addEventListener("click", async () => {
+  if (!state.currentItem?.path || state.activeView === "home") {
+    return;
+  }
+
+  const confirmed = window.confirm("Weet je zeker dat je dit item wilt verwijderen?");
+  if (!confirmed) {
+    return;
+  }
+
+  try {
+    setMessage("Item verwijderen...", "");
+    await api("/api/cms/delete", {
+      method: "POST",
+      body: JSON.stringify({
+        type: state.activeView,
+        path: state.currentItem.path,
+        sha: state.currentItem.sha || "",
+      }),
+    });
+    await refreshActiveView();
+    setMessage("Item verwijderd.", "success");
+  } catch (err) {
+    setMessage(err.message, "error");
+  }
 });
 
 elements.editorForm.addEventListener("submit", async (event) => {

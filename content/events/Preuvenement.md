@@ -1,6 +1,7 @@
 ---
 title: Preuvenement
 date: 2024-08-15
-publishdate: 2023-03-18
+summary: BEGR!P tijdens het Preuvenement.
 draft: true
 ---
+BEGR!P tijdens het Preuvenement.
