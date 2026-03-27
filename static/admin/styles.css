@@ -364,6 +364,7 @@ textarea {
 }
 
 .toast-editor-field .toast-editor-shell {
+  min-height: 24rem;
   border: 1px solid var(--line);
   border-radius: 20px;
   overflow: hidden;

@@ -370,8 +370,6 @@ function initializeToastEditor() {
     return;
   }
 
-  textarea.classList.add("hidden");
-
   const editor = new window.toastui.Editor({
     el: host,
     initialValue: textarea.value || "",
@@ -387,6 +385,7 @@ function initializeToastEditor() {
     textarea.value = editor.getMarkdown();
   });
 
+  textarea.classList.add("hidden");
   state.editors.body = editor;
 }
 
