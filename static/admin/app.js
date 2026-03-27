@@ -23,7 +23,7 @@ const viewConfig = {
     buttonLabel: "Nieuwe blog",
     fields: [
       { name: "title", label: "Titel", type: "text", required: true },
-      { name: "date", label: "Publicatiedatum", type: "date", required: true },
+      { name: "date", label: "Publicatiedatum en tijd", type: "datetime-local", required: true },
       { name: "author", label: "Auteur", type: "text" },
       { name: "summary", label: "Korte samenvatting", type: "textarea", rows: 3 },
       { name: "image", label: "Omslagafbeelding", type: "image" },
@@ -961,8 +961,8 @@ function hasExplicitTime(dateValue) {
 
 function formatListMeta(item) {
   const parts = [];
-  const isEvent = item.type === "events";
-  const formattedDate = formatDutchDate(item.date, isEvent && hasExplicitTime(item.date));
+  const showTime = hasExplicitTime(item.date);
+  const formattedDate = formatDutchDate(item.date, showTime);
 
   if (formattedDate) {
     parts.push(formattedDate);
@@ -970,15 +970,6 @@ function formatListMeta(item) {
 
   parts.push(item.draft ? "concept" : "gepubliceerd");
   return parts.join(" · ");
-}
-
-function compareCmsItems(a, b) {
-  const byDate = String(b.date || "").localeCompare(String(a.date || ""));
-  if (byDate !== 0) {
-    return byDate;
-  }
-
-  return String(b.cms_updated_at || "").localeCompare(String(a.cms_updated_at || ""));
 }
 
 function updateCurrentItemState(response, payload) {
@@ -1009,7 +1000,6 @@ function upsertListItemFromPayload(response, payload) {
     path: response.path,
     title: payload.fields.title || "Zonder titel",
     date: payload.fields.date || "",
-    cms_updated_at: response.cms_updated_at || new Date().toISOString(),
     draft: Boolean(payload.fields.draft),
     author: payload.fields.author || payload.fields.organiser || "",
     summary,
@@ -1024,7 +1014,7 @@ function upsertListItemFromPayload(response, payload) {
     items.unshift(nextItem);
   }
 
-  items.sort(compareCmsItems);
+  items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
   state.lists[state.activeView] = items;
   renderList();
 }

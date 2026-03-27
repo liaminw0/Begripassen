@@ -593,8 +593,11 @@ function normalizeBlogDate(value) {
     return "";
   }
 
-  const match = raw.match(/^(\d{4}-\d{2}-\d{2})/);
-  return match ? match[1] : raw;
+  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)) {
+    return `${raw}:00`;
+  }
+
+  return raw;
 }
 
 function normalizeUrlLikeValue(value) {
@@ -663,7 +666,6 @@ export function normalizeFields(type, rawFields) {
       signup_link: normalizeUrlLikeValue(rawFields.signup_link),
       draft: Boolean(rawFields.draft),
       summary: rawFields.summary || "",
-      cms_updated_at: rawFields.cms_updated_at || "",
     };
   }
 
@@ -675,7 +677,6 @@ export function normalizeFields(type, rawFields) {
       image: rawFields.image || "",
       draft: Boolean(rawFields.draft),
       summary: rawFields.summary || "",
-      cms_updated_at: rawFields.cms_updated_at || "",
     };
   }
 
@@ -687,7 +688,6 @@ export function summarizeItem(type, path, fields, body) {
     path,
     title: fields.title || "Zonder titel",
     date: fields.date || "",
-    cms_updated_at: fields.cms_updated_at || "",
     draft: Boolean(fields.draft),
     author: fields.author || fields.organiser || "",
     summary: fields.summary || body.split("\n").find(Boolean) || "",

@@ -41,7 +41,6 @@ export async function onRequestPost(context) {
 
   const rawFields = { ...(payload.fields || {}) };
   const uploads = Array.isArray(payload.uploads) ? payload.uploads : [];
-  const savedAt = new Date().toISOString();
 
   try {
     const provisionalFields = normalizeFields(type, rawFields);
@@ -74,10 +73,6 @@ export async function onRequestPost(context) {
       rawFields[key] = nextValue;
     }
 
-    if (type === "events" || type === "blogs") {
-      rawFields.cms_updated_at = savedAt;
-    }
-
     let body = String(payload.body || "");
     for (const [token, replacement] of replacements.entries()) {
       body = body.split(token).join(replacement);
@@ -100,7 +95,6 @@ export async function onRequestPost(context) {
       ok: true,
       path,
       sha: response.sha || "",
-      cms_updated_at: savedAt,
     });
   } catch (err) {
     return error(err.message, 500);
