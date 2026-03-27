@@ -192,6 +192,10 @@ textarea {
   gap: 1.5rem;
 }
 
+.dashboard-grid.is-home-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .panel-card {
   padding: 1.25rem;
 }

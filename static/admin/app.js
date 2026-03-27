@@ -66,6 +66,7 @@ const elements = {
   loginError: document.getElementById("login-error"),
   logoutButton: document.getElementById("logout-button"),
   nav: document.getElementById("cms-nav"),
+  dashboardGrid: document.getElementById("dashboard-grid"),
   listCard: document.getElementById("list-card"),
   contentList: document.getElementById("content-list"),
   editorEmpty: document.getElementById("editor-empty"),
@@ -370,6 +371,7 @@ function renderList() {
   elements.viewTitle.textContent = config.title;
   elements.listTitle.textContent = config.listTitle;
   elements.newItemButton.textContent = config.buttonLabel;
+  elements.dashboardGrid.classList.toggle("is-home-layout", state.activeView === "home");
   elements.listCard.classList.toggle("hidden", state.activeView === "home");
   elements.newItemButton.classList.toggle("hidden", state.activeView === "home");
   elements.refreshButton.classList.toggle("hidden", state.activeView === "home");
