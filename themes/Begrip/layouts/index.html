@@ -39,13 +39,15 @@
   <div id="about-container">
     <div class="section">
     <div class="container-left">
-      <img src="{{ "images/about.jpeg" | relURL }}" alt="">
+      <img src="{{ if .Params.about_image }}{{ .Params.about_image | relURL }}{{ else }}{{ "images/about.jpeg" | relURL }}{{ end }}" alt="Over BEGR!P">
     </div>
     <div class="container-right">
       <h1>Over ons</h1>
       <p>{{ .Params.about }}...
       </p>
-      <a href="#" class="button">Lees verder...</a> 
+      {{ with .Params.about_link_text }}
+      <a href="{{ $.Params.about_link_url | default "#" }}" class="button">{{ . }}</a>
+      {{ end }}
     </div>
   </div>
   </div>
@@ -98,8 +100,12 @@
         <h1>Steun Ons</h1>
         <p>{{ .Params.support }}</p>
         <div class="support-actions">
-          <a href="#">Deel jouw idee met ons</a>
-          <a href="#">Vertel over BEGR!P in je netwerk</a>
+          {{ with .Params.support_action_primary_text }}
+          <a href="{{ $.Params.support_action_primary_url | default "#" }}">{{ . }}</a>
+          {{ end }}
+          {{ with .Params.support_action_secondary_text }}
+          <a href="{{ $.Params.support_action_secondary_url | default "#" }}">{{ . }}</a>
+          {{ end }}
         </div>
       </div>
       <div class="support-payment-placeholder">
@@ -123,9 +129,15 @@
         <p>{{ .Params.contact }}</p>
       </div>
       <div class="contact-links">
-        <a href="tel:+31685997001"><span class="contact-label">Bel of WhatsApp</span><strong>+31 685997001</strong></a>
-        <a href="mailto:contact@begripassen.nl"><span class="contact-label">E-mail</span><strong>contact@begripassen.nl</strong></a>
-        <a href="https://www.instagram.com/begripassen" target="_blank" rel="noopener noreferrer"><span class="contact-label">Instagram</span><strong>@begripassen</strong></a>
+        {{ with .Params.contact_phone }}
+        <a href="tel:{{ . }}"><span class="contact-label">{{ $.Params.contact_phone_label | default "Bel of WhatsApp" }}</span><strong>{{ . }}</strong></a>
+        {{ end }}
+        {{ with .Params.contact_email }}
+        <a href="mailto:{{ . }}"><span class="contact-label">{{ $.Params.contact_email_label | default "E-mail" }}</span><strong>{{ . }}</strong></a>
+        {{ end }}
+        {{ with .Params.contact_instagram_url }}
+        <a href="{{ . }}" target="_blank" rel="noopener noreferrer"><span class="contact-label">{{ $.Params.contact_instagram_label | default "Instagram" }}</span><strong>{{ $.Params.contact_instagram_handle | default "@begripassen" }}</strong></a>
+        {{ end }}
       </div>
     </div>
   </div>

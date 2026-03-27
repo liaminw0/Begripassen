@@ -399,10 +399,31 @@ export function normalizeFields(type, rawFields) {
       title: rawFields.title || rawFields.Title || "Home Pagina",
       heading: rawFields.heading || rawFields.Heading || "",
       about: rawFields.about || rawFields.About || "",
+      about_image: rawFields.about_image || rawFields.AboutImage || "",
+      about_link_text: rawFields.about_link_text || rawFields.AboutLinkText || "",
+      about_link_url: rawFields.about_link_url || rawFields.AboutLinkUrl || "",
       blog: rawFields.blog || rawFields.Blog || "",
       newsletter: rawFields.newsletter || rawFields.Newsletter || "",
       contact: rawFields.contact || rawFields.Contact || "",
       support: rawFields.support || rawFields.Support || "",
+      support_action_primary_text:
+        rawFields.support_action_primary_text || rawFields.SupportActionPrimaryText || "",
+      support_action_primary_url:
+        rawFields.support_action_primary_url || rawFields.SupportActionPrimaryUrl || "",
+      support_action_secondary_text:
+        rawFields.support_action_secondary_text || rawFields.SupportActionSecondaryText || "",
+      support_action_secondary_url:
+        rawFields.support_action_secondary_url || rawFields.SupportActionSecondaryUrl || "",
+      contact_phone_label: rawFields.contact_phone_label || rawFields.ContactPhoneLabel || "",
+      contact_phone: rawFields.contact_phone || rawFields.ContactPhone || "",
+      contact_email_label: rawFields.contact_email_label || rawFields.ContactEmailLabel || "",
+      contact_email: rawFields.contact_email || rawFields.ContactEmail || "",
+      contact_instagram_label:
+        rawFields.contact_instagram_label || rawFields.ContactInstagramLabel || "",
+      contact_instagram_handle:
+        rawFields.contact_instagram_handle || rawFields.ContactInstagramHandle || "",
+      contact_instagram_url:
+        rawFields.contact_instagram_url || rawFields.ContactInstagramUrl || "",
     };
   }
 
