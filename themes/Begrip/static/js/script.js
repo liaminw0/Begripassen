@@ -46,7 +46,9 @@ document.addEventListener("DOMContentLoaded", function() {
   const heroVideo = document.querySelector("#heading-container .hero-video");
   if (heroVideo) {
     heroVideo.addEventListener("loadedmetadata", function() {
-      heroVideo.currentTime = 5.5;
+      if (Number.isFinite(heroVideo.duration) && heroVideo.duration > 0) {
+        heroVideo.currentTime = heroVideo.duration / 2;
+      }
     }, { once: true });
   }
 
