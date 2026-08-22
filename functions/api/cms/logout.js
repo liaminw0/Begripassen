@@ -1,12 +1,23 @@
-import { clearSessionCookie, json } from "./_lib";
+import {
+  assertSameOrigin,
+  clearSessionCookie,
+  getSession,
+  handleError,
+  json,
+  requireSession,
+} from "./_core.js";
 
 export async function onRequestPost(context) {
-  return json(
-    { ok: true },
-    {
-      headers: {
-        "set-cookie": clearSessionCookie(context.request.url),
-      },
-    }
-  );
+  try {
+    const session = await getSession(context.request, context.env);
+    if (session) await requireSession(context, { mutation: true });
+    else assertSameOrigin(context.request);
+
+    return json(
+      { ok: true },
+      { headers: { "set-cookie": clearSessionCookie(context.request.url) } }
+    );
+  } catch (err) {
+    return handleError(err);
+  }
 }

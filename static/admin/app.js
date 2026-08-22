@@ -1,1226 +1,1206 @@
-const viewConfig = {
-  events: {
-    eyebrow: "Events",
-    title: "Events maken en bijwerken",
-    listTitle: "Bestaande events",
-    buttonLabel: "Nieuw event",
-    fields: [
-      { name: "title", label: "Titel", type: "text", required: true },
-      { name: "date", label: "Datum en tijd", type: "datetime-local", required: true },
-      { name: "location", label: "Locatie", type: "text" },
-      { name: "organiser", label: "Organisator", type: "text" },
-      { name: "image", label: "Omslagafbeelding", type: "image" },
-      { name: "show_signup", label: "Aanmeldknop tonen", type: "checkbox" },
-      { name: "signup_link", label: "Aanmeldlink", type: "text" },
-      { name: "draft", label: "Concept", type: "checkbox" },
-      { name: "body", label: "Inhoud", type: "markdown", required: true },
-    ],
-  },
-  blogs: {
-    eyebrow: "Blogs",
-    title: "Blogs schrijven en publiceren",
-    listTitle: "Bestaande blogs",
-    buttonLabel: "Nieuwe blog",
-    fields: [
-      { name: "title", label: "Titel", type: "text", required: true },
-      { name: "date", label: "Publicatiedatum en tijd", type: "datetime-local", required: true },
-      { name: "author", label: "Auteur", type: "text" },
-      { name: "summary", label: "Korte samenvatting", type: "textarea", rows: 3 },
-      { name: "image", label: "Omslagafbeelding", type: "image" },
-      { name: "draft", label: "Concept", type: "checkbox" },
-      { name: "body", label: "Inhoud", type: "markdown", required: true },
-    ],
-  },
-  home: {
-    eyebrow: "Homepagina",
-    title: "Homepagina bijwerken",
-    listTitle: "Homepagina",
-    buttonLabel: "Homepagina openen",
-    fields: [
-      { name: "heading", label: "Hoofdtekst", type: "textarea", rows: 4, required: true, group: "intro" },
-      { name: "about", label: "Over ons", type: "textarea", rows: 4, required: true, group: "about" },
-      { name: "about_image", label: "Over ons afbeelding", type: "image", group: "about" },
-      { name: "about_link_text", label: "Over ons knoptekst", type: "text", group: "about" },
-      { name: "about_link_url", label: "Over ons knoplink", type: "text", group: "about" },
-      { name: "blog", label: "Blog intro", type: "textarea", rows: 4, required: true, group: "blog" },
-      { name: "newsletter", label: "Nieuwsbrief intro", type: "textarea", rows: 4, required: true, group: "newsletter" },
-      { name: "support", label: "Steun ons intro", type: "textarea", rows: 4, required: true, group: "support" },
-      { name: "support_primary_text", label: "Steun ons knop 1 tekst", type: "text", group: "support" },
-      { name: "support_primary_url", label: "Steun ons knop 1 link", type: "text", group: "support" },
-      { name: "support_secondary_text", label: "Steun ons knop 2 tekst", type: "text", group: "support" },
-      { name: "support_secondary_url", label: "Steun ons knop 2 link", type: "text", group: "support" },
-      { name: "contact", label: "Contact intro", type: "textarea", rows: 4, required: true, group: "contact" },
-      { name: "contact_phone_label", label: "Telefoon label", type: "text", layout: "third", rowGroup: "contact-phone", group: "contact" },
-      { name: "contact_phone", label: "Telefoonnummer", type: "text", layout: "third", rowGroup: "contact-phone", group: "contact" },
-      { name: "contact_email_label", label: "E-mail label", type: "text", layout: "third", rowGroup: "contact-email", group: "contact" },
-      { name: "contact_email", label: "E-mailadres", type: "text", layout: "third", rowGroup: "contact-email", group: "contact" },
-      { name: "contact_instagram_label", label: "Instagram label", type: "text", layout: "third", rowGroup: "contact-instagram", group: "contact" },
-      { name: "contact_instagram_handle", label: "Instagram naam", type: "text", layout: "third", rowGroup: "contact-instagram", group: "contact" },
-      { name: "contact_instagram_url", label: "Instagram link", type: "text", layout: "third", rowGroup: "contact-instagram", group: "contact" },
-    ],
-  },
+import { CmsApiError, cmsClient } from "./cms-client.js";
+import {
+  contentModels,
+  createEmptyItem,
+  draftStorageKey,
+  fieldsForType,
+  formatDutchDate,
+  inputValue,
+  resolveImageUrl,
+  validateItem,
+} from "./content-model.js";
+import {
+  UploadQueue,
+  createRichTextEditor,
+  expandAssetUrls,
+  renderMarkdownPreview,
+} from "./editor-tools.js";
+
+const elements = {
+  loginView: document.getElementById("login-view"),
+  loginForm: document.getElementById("login-form"),
+  password: document.getElementById("password-input"),
+  loginError: document.getElementById("login-error"),
+  workspace: document.getElementById("workspace"),
+  nav: document.getElementById("main-nav"),
+  navButtons: [...document.querySelectorAll("[data-route]")],
+  topbarActions: document.getElementById("topbar-actions"),
+  brandButton: document.getElementById("brand-button"),
+  logoutButton: document.getElementById("logout-button"),
+  announcement: document.getElementById("announcement"),
+  overview: document.getElementById("overview-view"),
+  list: document.getElementById("list-view"),
+  editor: document.getElementById("editor-view"),
+  listKicker: document.getElementById("list-kicker"),
+  listTitle: document.getElementById("list-view-title"),
+  listDescription: document.getElementById("list-description"),
+  search: document.getElementById("search-input"),
+  statusFilter: document.getElementById("status-filter"),
+  refresh: document.getElementById("refresh-button"),
+  contentList: document.getElementById("content-list"),
+  loadMore: document.getElementById("load-more-button"),
+  newItem: document.getElementById("new-item-button"),
+  editorBack: document.getElementById("editor-back-button"),
+  editorKicker: document.getElementById("editor-kicker"),
+  editorTitle: document.getElementById("editor-title"),
+  editorDescription: document.getElementById("editor-description"),
+  contentStatus: document.getElementById("content-status"),
+  editorForm: document.getElementById("editor-form"),
+  editorFields: document.getElementById("editor-fields"),
+  sectionTabs: document.getElementById("home-section-tabs"),
+  validationSummary: document.getElementById("validation-summary"),
+  saveState: document.getElementById("save-state"),
+  previewButton: document.getElementById("preview-button"),
+  saveDraft: document.getElementById("save-draft-button"),
+  publish: document.getElementById("publish-button"),
+  deleteButton: document.getElementById("delete-button"),
+  recovery: document.getElementById("recovery-banner"),
+  restoreDraft: document.getElementById("restore-draft-button"),
+  discardDraft: document.getElementById("discard-draft-button"),
+  previewDialog: document.getElementById("preview-dialog"),
+  previewImageWrap: document.getElementById("preview-image-wrap"),
+  previewImage: document.getElementById("preview-image"),
+  previewMeta: document.getElementById("preview-meta"),
+  previewTitle: document.getElementById("preview-content-title"),
+  previewSummary: document.getElementById("preview-summary"),
+  previewBody: document.getElementById("preview-body"),
+  homePreview: document.getElementById("home-preview"),
+  confirmDialog: document.getElementById("confirm-dialog"),
+  confirmTitle: document.getElementById("confirm-title"),
+  confirmMessage: document.getElementById("confirm-message"),
+  confirmCancel: document.getElementById("confirm-cancel"),
+  confirmAccept: document.getElementById("confirm-accept"),
 };
 
-const homeEditorCards = [
-  {
-    eyebrow: "Bovenaan",
-    title: "Intro en over ons",
-    description: "De eerste indruk van de homepagina, plus het blok waarin BEGR!P wordt uitgelegd.",
-    sections: [
-      { id: "intro", title: "Intro" },
-      { id: "about", title: "Over ons" },
-    ],
-  },
-  {
-    eyebrow: "Midden",
-    title: "Blog en nieuwsbrief",
-    description: "De twee inhoudsblokken waarmee bezoekers verder lezen of zich aanmelden.",
-    sections: [
-      { id: "blog", title: "Blog" },
-      { id: "newsletter", title: "Nieuwsbrief" },
-    ],
-  },
-  {
-    eyebrow: "Onderaan",
-    title: "Steun ons en contact",
-    description: "De slotsecties van de homepage met oproep en contactinformatie.",
-    sections: [
-      { id: "support", title: "Steun ons" },
-      { id: "contact", title: "Contact" },
-    ],
-  },
-];
-
 const state = {
-  activeView: "home",
   authenticated: false,
-  currentItem: null,
-  editorMode: "empty",
-  editorInstance: null,
-  pendingEditorImages: [],
-  pendingFieldImages: {},
-  lists: {
-    events: [],
-    blogs: [],
-  },
-  listPagination: {
+  route: "overview",
+  activeType: "",
+  item: null,
+  dirty: false,
+  busy: false,
+  requestController: null,
+  requestSequence: 0,
+  richEditor: null,
+  uploadQueue: new UploadQueue(),
+  autosaveTimer: null,
+  currentDraftKey: "",
+  pendingRecovery: null,
+  activeHomeSection: "intro",
+  lists: { events: [], blogs: [] },
+  pagination: {
     events: { offset: 0, limit: 20, hasMore: true, loading: false },
     blogs: { offset: 0, limit: 20, hasMore: true, loading: false },
   },
 };
 
-const elements = {
-  loginPanel: document.getElementById("login-panel"),
-  dashboardPanel: document.getElementById("dashboard-panel"),
-  loginForm: document.getElementById("login-form"),
-  passwordInput: document.getElementById("password-input"),
-  loginError: document.getElementById("login-error"),
-  logoutButton: document.getElementById("logout-button"),
-  nav: document.getElementById("cms-nav"),
-  sidebarTitle: document.getElementById("sidebar-title"),
-  sidebarCopy: document.getElementById("sidebar-copy"),
-  dashboardGrid: document.getElementById("dashboard-grid"),
-  listCard: document.getElementById("list-card"),
-  contentList: document.getElementById("content-list"),
-  editorEmpty: document.getElementById("editor-empty"),
-  editorEmptyEyebrow: document.getElementById("editor-empty-eyebrow"),
-  editorEmptyTitle: document.getElementById("editor-empty-title"),
-  editorEmptyCopy: document.getElementById("editor-empty-copy"),
-  editorForm: document.getElementById("editor-form"),
-  editorFields: document.getElementById("editor-fields"),
-  editorMeta: document.getElementById("editor-meta"),
-  editorMessage: document.getElementById("editor-message"),
-  deleteButton: document.getElementById("delete-button"),
-  newItemButton: document.getElementById("new-item-button"),
-  refreshButton: document.getElementById("refresh-button"),
-  viewEyebrow: document.getElementById("view-eyebrow"),
-  viewTitle: document.getElementById("view-title"),
-  listTitle: document.getElementById("list-title"),
-  navButtons: [...document.querySelectorAll(".cms-nav button")],
-  itemTemplate: document.getElementById("list-item-template"),
-};
-
-let listScrollObserver = null;
-
-function trimSlashes(value) {
-  return String(value || "").replace(/^\/+|\/+$/g, "");
+function deepClone(value) {
+  return JSON.parse(JSON.stringify(value));
 }
 
-function resolveImagePreviewUrl(rawValue, itemPath = "") {
-  const value = String(rawValue || "").trim();
-  if (!value) {
-    return "";
-  }
-
-  if (/^(https?:)?\/\//.test(value) || value.startsWith("/") || value.startsWith("data:") || value.startsWith("blob:")) {
-    return value;
-  }
-
-  if (!itemPath || !/\/index\.md$/.test(itemPath)) {
-    return value;
-  }
-
-  const publicBase = `/${trimSlashes(itemPath.replace(/^content\//, "").replace(/\/index\.md$/, ""))}/`;
-  return `${publicBase}${trimSlashes(value)}`;
+function setHidden(element, hidden) {
+  element.classList.toggle("hidden", hidden);
 }
 
-function getItemPublicBase(itemPath = "") {
-  if (!itemPath || !/\/index\.md$/.test(itemPath)) {
-    return "";
-  }
-
-  return `/${trimSlashes(itemPath.replace(/^content\//, "").replace(/\/index\.md$/, ""))}/`;
+function announce(message, tone = "") {
+  elements.announcement.textContent = message || "";
+  elements.announcement.className = `announcement${tone ? ` announcement-${tone}` : ""}`;
 }
 
-function escapeRegExp(value) {
-  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-function expandEditorBodyAssetUrls(markdown, itemPath = "") {
-  const publicBase = getItemPublicBase(itemPath);
-  if (!publicBase) {
-    return markdown;
-  }
-
-  return String(markdown || "")
-    .replace(/(!\[[^\]]*]\()([^)\s]+)(\))/g, (match, before, url, after) => {
-      return `${before}${resolveImagePreviewUrl(url, itemPath)}${after}`;
-    })
-    .replace(/(<img\b[^>]*\bsrc=["'])([^"']+)(["'][^>]*>)/gi, (match, before, url, after) => {
-      return `${before}${resolveImagePreviewUrl(url, itemPath)}${after}`;
-    });
-}
-
-function collapseEditorBodyAssetUrls(markdown, itemPath = "") {
-  const publicBase = getItemPublicBase(itemPath);
-  if (!publicBase) {
-    return markdown;
-  }
-
-  const escapedBase = escapeRegExp(publicBase);
-  const escapedOriginBase = escapeRegExp(`${window.location.origin}${publicBase}`);
-  const replacer = (url) =>
-    url
-      .replace(new RegExp(`^${escapedOriginBase}`), "")
-      .replace(new RegExp(`^${escapedBase}`), "");
-
-  return String(markdown || "")
-    .replace(/(!\[[^\]]*]\()([^)\s]+)(\))/g, (match, before, url, after) => {
-      return `${before}${replacer(url)}${after}`;
-    })
-    .replace(/(<img\b[^>]*\bsrc=["'])([^"']+)(["'][^>]*>)/gi, (match, before, url, after) => {
-      return `${before}${replacer(url)}${after}`;
-    });
-}
-
-function setMessage(message, tone = "") {
-  elements.editorMessage.textContent = message || "";
-  elements.editorMessage.className = tone ? `form-message ${tone}` : "form-message";
-}
-
-function setLoginError(message) {
-  elements.loginError.textContent = message || "";
-}
-
-function updateSidebarCopy() {
-  if (state.authenticated) {
-    elements.sidebarTitle.textContent = "Inhoud beheren";
-    elements.sidebarCopy.textContent = "Maak nieuwe events en blogposts, werk homepage-teksten bij en upload beelden.";
-    return;
-  }
-
-  elements.sidebarTitle.textContent = "Teamomgeving";
-  elements.sidebarCopy.textContent = "Log in om de website van BEGR!P bij te werken en nieuwe inhoud te publiceren.";
-}
-
-function setEditorMode(mode) {
-  state.editorMode = mode;
-  const showForm = mode === "editing";
-  elements.editorEmpty.classList.toggle("hidden", showForm);
-  elements.editorForm.classList.toggle("hidden", !showForm);
-  elements.deleteButton.classList.toggle("hidden", !showForm || state.activeView === "home");
-}
-
-function showEmptyEditorState() {
-  const config = viewConfig[state.activeView];
-  state.currentItem = null;
-  setEditorMode("empty");
-  elements.editorFields.innerHTML = "";
-  elements.editorMeta.innerHTML = "";
-  elements.editorMeta.classList.add("hidden");
-  elements.editorEmptyEyebrow.textContent = config.eyebrow;
-
-  if (state.activeView === "home") {
-    elements.editorEmptyTitle.textContent = "Homepagina wordt geladen";
-    elements.editorEmptyCopy.textContent = "De homepagina heeft geen losse lijstweergave nodig en opent direct in de editor.";
-  } else {
-    elements.editorEmptyTitle.textContent = "Kies eerst een item";
-    elements.editorEmptyCopy.textContent = `Selecteer links een bestaand ${state.activeView === "events" ? "evenement" : "blogartikel"} of klik op "${config.buttonLabel}" om een nieuw item te openen.`;
-  }
-}
-
-async function api(path, options = {}) {
-  const response = await fetch(path, {
-    credentials: "same-origin",
-    headers: {
-      "content-type": "application/json",
-      ...(options.headers || {}),
-    },
-    ...options,
-  });
-
-  const payload = await response.json().catch(() => ({}));
-  if (!response.ok || payload.ok === false) {
-    throw new Error(payload.error || `Request failed with ${response.status}`);
-  }
-  return payload;
-}
-
-function toInputDateTime(value) {
-  if (!value) {
-    return "";
-  }
-
-  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(value)) {
-    return value;
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  const pad = (part) => String(part).padStart(2, "0");
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-}
-
-function toInputDate(value) {
-  if (!value) {
-    return "";
-  }
-
-  const match = String(value).match(/^(\d{4}-\d{2}-\d{2})/);
-  if (match) {
-    return match[1];
-  }
-
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-
-  return date.toISOString().slice(0, 10);
-}
-
-function escapeHtml(value) {
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function buildFieldMarkup(field, value = "") {
-  if (field.type === "checkbox") {
-    return `
-      <label class="checkbox-field" data-field-wrapper="${field.name}">
-        <input type="checkbox" name="${field.name}" ${value ? "checked" : ""} />
-        <span>${field.label}</span>
-      </label>
-    `;
-  }
-
-  if (field.type === "textarea") {
-    const rows = field.rows || 4;
-    return `
-      <label>
-        ${field.label}
-        <textarea name="${field.name}" rows="${rows}" ${field.required ? "required" : ""}>${escapeHtml(value)}</textarea>
-      </label>
-    `;
-  }
-
-  if (field.type === "markdown") {
-    const rows = field.rows || 12;
-    const isBlogBody = state.activeView === "blogs" && field.name === "body";
-    if (isBlogBody) {
-      return `
-        <div class="field-block toast-field">
-          <span class="field-label">${field.label}</span>
-          <div class="toast-host" data-toast-editor="body"></div>
-          <textarea name="${field.name}" rows="${rows}" ${field.required ? "required" : ""}>${escapeHtml(value)}</textarea>
-        </div>
-      `;
-    }
-
-    return `
-      <label>
-        ${field.label}
-        <textarea name="${field.name}" rows="${rows}" ${field.required ? "required" : ""}>${escapeHtml(value)}</textarea>
-      </label>
-    `;
-  }
-
-  if (field.type === "image") {
-    const previewValue = resolveImagePreviewUrl(value, state.currentItem?.path || "");
-    const previewMarkup = previewValue
-      ? `<div class="image-preview" data-image-preview="${field.name}"><img src="${escapeHtml(previewValue)}" alt="${escapeHtml(field.label)}" loading="lazy" /></div>`
-      : `<div class="image-preview hidden" data-image-preview="${field.name}"><img src="" alt="${escapeHtml(field.label)}" loading="lazy" /></div>`;
-
-    return `
-      <label data-image-field="${field.name}" data-field-wrapper="${field.name}">
-        ${field.label}
-        <input type="hidden" name="${field.name}" value="${escapeHtml(value)}" />
-        ${previewMarkup}
-        <div class="upload-row">
-          <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" data-upload-input="${field.name}" class="hidden-upload-input" />
-          <button type="button" class="secondary" data-upload-button="${field.name}">Kies en upload afbeelding</button>
-        </div>
-      </label>
-    `;
-  }
-
-  const normalizedValue =
-    field.type === "datetime-local" ? toInputDateTime(value) : field.type === "date" ? toInputDate(value) : value;
-
-  return `
-    <label data-field-wrapper="${field.name}" data-field-layout="${field.layout || ""}">
-      ${field.label}
-      <input type="${field.type}" name="${field.name}" value="${escapeHtml(normalizedValue)}" ${field.required ? "required" : ""} />
-    </label>
-    `;
-}
-
-function applyFieldVisibilityRules() {
-  if (state.activeView !== "events") {
-    return;
-  }
-
-  const signupToggle = elements.editorFields.querySelector('input[name="show_signup"]');
-  const signupLinkWrapper = elements.editorFields.querySelector('[data-field-wrapper="signup_link"]');
-
-  if (!signupToggle || !signupLinkWrapper) {
-    return;
-  }
-
-  const updateSignupLinkVisibility = () => {
-    const visible = signupToggle.checked;
-    signupLinkWrapper.classList.toggle("hidden", !visible);
-
-    if (!visible) {
-      const signupLinkInput = signupLinkWrapper.querySelector('input[name="signup_link"]');
-      if (signupLinkInput) {
-        signupLinkInput.value = "";
-      }
-    }
-  };
-
-  signupToggle.addEventListener("change", updateSignupLinkVisibility);
-  updateSignupLinkVisibility();
-}
-
-function clearPendingEditorImages() {
-  for (const image of state.pendingEditorImages) {
-    if (image.objectUrl) {
-      URL.revokeObjectURL(image.objectUrl);
-    }
-  }
-  state.pendingEditorImages = [];
-}
-
-function clearPendingFieldImages() {
-  for (const pendingImage of Object.values(state.pendingFieldImages)) {
-    if (pendingImage?.objectUrl) {
-      URL.revokeObjectURL(pendingImage.objectUrl);
-    }
-  }
-  state.pendingFieldImages = {};
-}
-
-function destroyToastEditor() {
-  if (!state.editorInstance) {
-    clearPendingEditorImages();
-    clearPendingFieldImages();
-    return;
-  }
-
-  state.editorInstance.destroy();
-  state.editorInstance = null;
-  clearPendingEditorImages();
-  clearPendingFieldImages();
-}
-
-function initializeToastEditor() {
-  destroyToastEditor();
-
-  if (state.activeView !== "blogs" || !window.toastui || !window.toastui.Editor) {
-    return;
-  }
-
-  const host = elements.editorFields.querySelector('[data-toast-editor="body"]');
-  const textarea = elements.editorFields.querySelector('textarea[name="body"]');
-  if (!host || !textarea) {
-    return;
-  }
-
-  const editor = new window.toastui.Editor({
-    el: host,
-    initialValue: expandEditorBodyAssetUrls(textarea.value || "", state.currentItem?.path || ""),
-    initialEditType: "wysiwyg",
-    previewStyle: "vertical",
-    height: "540px",
-    hideModeSwitch: false,
-    usageStatistics: false,
-    toolbarItems: [
-      ["heading", "bold", "italic", "strike"],
-      ["hr", "quote"],
-      ["ul", "ol", "task"],
-      ["table", "image", "link"],
-    ],
-    hooks: {
-      addImageBlobHook: async (blob, callback) => {
-        try {
-          setMessage("Afbeelding omzetten naar WebP...", "");
-          const sourceFile = blob instanceof File ? blob : new File([blob], "afbeelding", { type: blob.type || "image/png" });
-          const webpFile = await convertImageToWebP(sourceFile);
-          const objectUrl = URL.createObjectURL(webpFile);
-          state.pendingEditorImages.push({
-            id: crypto.randomUUID(),
-            file: webpFile,
-            objectUrl,
-            uploadedPath: "",
-          });
-          callback(objectUrl, webpFile.name.replace(/\.[^/.]+$/, ""));
-          setMessage("Afbeelding klaar voor upload. Deze wordt opgeslagen zodra je op Opslaan klikt.", "");
-        } catch (err) {
-          setMessage(err.message, "error");
-        }
-        return false;
-      },
-    },
-  });
-
-  editor.on("change", () => {
-    textarea.value = editor.getMarkdown();
-  });
-
-  textarea.classList.add("hidden");
-  state.editorInstance = editor;
-}
-
-function renderFieldRows(fields, item) {
-  const gridMarkup = [];
-  let currentRow = [];
-  let currentLayout = "pair";
-  let currentRowGroup = "";
-
-  const flushCurrentRow = () => {
-    if (!currentRow.length) {
-      return;
-    }
-    const gridClass = currentLayout === "third" ? "field-grid field-grid-third" : "field-grid";
-    gridMarkup.push(`<div class="${gridClass}">${currentRow.join("")}</div>`);
-    currentRow = [];
-  };
-
-  for (const field of fields) {
-    const fieldValue = field.name === "body" ? item?.body || "" : item?.fields?.[field.name] || "";
-    const markup = buildFieldMarkup(field, fieldValue);
-    const isBlockField = field.type === "textarea" || field.type === "markdown" || field.type === "image" || field.type === "checkbox";
-    const layout = field.layout || "pair";
-    const rowGroup = field.rowGroup || "";
-
-    if (isBlockField) {
-      flushCurrentRow();
-      gridMarkup.push(markup);
-      currentLayout = "pair";
-      currentRowGroup = "";
+function setBusy(busy, message = "") {
+  state.busy = busy;
+  elements.editorForm.setAttribute("aria-busy", String(busy));
+  for (const button of elements.editorForm.querySelectorAll("button")) {
+    if (busy) {
+      button.dataset.disabledBeforeBusy = String(button.disabled);
+      button.disabled = true;
     } else {
-      if (currentRow.length && (currentLayout !== layout || (currentRowGroup && currentRowGroup !== rowGroup))) {
-        flushCurrentRow();
-      }
-
-      currentLayout = layout;
-      currentRowGroup = rowGroup;
-      currentRow.push(markup);
-      const maxColumns = layout === "third" ? 3 : 2;
-
-      if (currentRow.length === maxColumns) {
-        flushCurrentRow();
-      }
+      button.disabled = button.dataset.disabledBeforeBusy === "true";
+      delete button.dataset.disabledBeforeBusy;
     }
   }
-
-  flushCurrentRow();
-  return gridMarkup.join("");
+  elements.logoutButton.disabled = busy;
+  if (message) elements.saveState.textContent = message;
 }
 
-function renderHomeEditor(item) {
-  const cardMarkup = homeEditorCards
-    .map((card) => {
-      const sectionMarkup = card.sections
-        .map((section) => {
-          const sectionFields = viewConfig.home.fields.filter((field) => field.group === section.id);
-          if (!sectionFields.length) {
-            return "";
-          }
-
-          return `
-            <section class="editor-subsection">
-              <h4>${section.title}</h4>
-              <div class="editor-subsection-fields">
-                ${renderFieldRows(sectionFields, item)}
-              </div>
-            </section>
-          `;
-        })
-        .join("");
-
-      if (!sectionMarkup) {
-        return "";
-      }
-
-      return `
-        <section class="editor-section-card">
-          <div class="editor-section-head">
-            <p class="eyebrow">${card.eyebrow}</p>
-            <h3>${card.title}</h3>
-            <p>${card.description}</p>
-          </div>
-          <div class="editor-section-fields">
-            ${sectionMarkup}
-          </div>
-        </section>
-      `;
-    })
-    .join("");
-
-  elements.editorFields.innerHTML = `<div class="editor-section-stack">${cardMarkup}</div>`;
-}
-
-function renderEditor(item = null) {
-  destroyToastEditor();
-  state.currentItem = item;
-  setEditorMode("editing");
-  const config = viewConfig[state.activeView];
-  if (state.activeView === "home") {
-    renderHomeEditor(item);
-  } else {
-    elements.editorFields.innerHTML = renderFieldRows(config.fields, item);
+function showAuthenticated(authenticated) {
+  state.authenticated = authenticated;
+  setHidden(elements.loginView, authenticated);
+  setHidden(elements.workspace, !authenticated);
+  setHidden(elements.nav, !authenticated);
+  setHidden(elements.topbarActions, !authenticated);
+  if (!authenticated) {
+    state.route = "overview";
+    state.activeType = "";
+    state.item = null;
+    state.dirty = false;
+    state.uploadQueue.clear();
+    destroyRichEditor();
   }
-  elements.editorMeta.innerHTML = item?.path ? `<div class="meta-chip">Bewerkt bestand: ${item.path}</div>` : "";
-  elements.editorMeta.classList.toggle("hidden", !item?.path);
-  setMessage(item ? "Bewerking geladen." : "");
-
-  for (const button of elements.editorFields.querySelectorAll("[data-upload-button]")) {
-    const fieldName = button.dataset.uploadButton;
-    const fileInput = elements.editorFields.querySelector(`[data-upload-input="${fieldName}"]`);
-    const targetInput = elements.editorFields.querySelector(`input[name="${fieldName}"]`);
-    const preview = elements.editorFields.querySelector(`[data-image-preview="${fieldName}"]`);
-    const previewImage = preview?.querySelector("img");
-
-    const syncImagePreview = (value, explicitPreviewUrl = "") => {
-      if (!preview || !previewImage) {
-        return;
-      }
-
-      const previewUrl = explicitPreviewUrl || resolveImagePreviewUrl(value, state.currentItem?.path || "");
-      const hasValue = Boolean(String(previewUrl || "").trim());
-      preview.classList.toggle("hidden", !hasValue);
-      previewImage.src = hasValue ? previewUrl : "";
-    };
-
-    const showLocalImagePreview = (file) => {
-      if (!preview || !previewImage || !file) {
-        return null;
-      }
-
-      const objectUrl = URL.createObjectURL(file);
-      preview.classList.remove("hidden");
-      previewImage.src = objectUrl;
-      return objectUrl;
-    };
-
-    targetInput?.addEventListener("input", () => {
-      syncImagePreview(targetInput.value);
-    });
-
-    button.addEventListener("click", () => {
-      fileInput.click();
-    });
-
-    fileInput.addEventListener("change", async () => {
-      const file = fileInput.files[0];
-
-      if (!file) {
-        return;
-      }
-
-      let localPreviewUrl = null;
-
-      try {
-        setMessage("Afbeelding omzetten naar WebP...", "");
-        const webpFile = await convertImageToWebP(file);
-        localPreviewUrl = showLocalImagePreview(webpFile);
-
-        const existingPending = state.pendingFieldImages[fieldName];
-        if (existingPending?.objectUrl) {
-          URL.revokeObjectURL(existingPending.objectUrl);
-        }
-
-        state.pendingFieldImages[fieldName] = {
-          fieldName,
-          file: webpFile,
-          objectUrl: localPreviewUrl,
-          uploadedPath: "",
-        };
-
-        targetInput.value = localPreviewUrl;
-        localPreviewUrl = null;
-        setMessage("Afbeelding klaar voor upload. Deze wordt opgeslagen zodra je op Opslaan klikt.", "");
-      } catch (err) {
-        setMessage(err.message, "error");
-      } finally {
-        if (localPreviewUrl) {
-          URL.revokeObjectURL(localPreviewUrl);
-        }
-        fileInput.value = "";
-      }
-    });
-  }
-
-  applyFieldVisibilityRules();
-  initializeToastEditor();
 }
 
-function fileToBase64(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => {
-      const result = String(reader.result || "");
-      resolve(result.split(",").pop());
+function updateRouteUI(route) {
+  state.route = route;
+  setHidden(elements.overview, route !== "overview");
+  setHidden(elements.list, route !== "list");
+  setHidden(elements.editor, route !== "editor");
+  for (const button of elements.navButtons) {
+    const expected = route === "overview" ? "overview" : state.activeType;
+    const active = button.dataset.route === expected;
+    button.classList.toggle("is-active", active);
+    if (active) button.setAttribute("aria-current", "page");
+    else button.removeAttribute("aria-current");
+  }
+}
+
+function focusMainHeading(view) {
+  const heading = view.querySelector("h1");
+  if (!heading) return;
+  heading.setAttribute("tabindex", "-1");
+  requestAnimationFrame(() => heading.focus());
+}
+
+function abortCurrentRequest() {
+  if (state.requestController) state.requestController.abort();
+  state.requestController = null;
+}
+
+function beginRequest() {
+  abortCurrentRequest();
+  state.requestController = new AbortController();
+  state.requestSequence += 1;
+  return { controller: state.requestController, sequence: state.requestSequence };
+}
+
+function destroyRichEditor() {
+  if (state.richEditor) state.richEditor.destroy();
+  state.richEditor = null;
+}
+
+function draftSignature(fields, body) {
+  return JSON.stringify({ fields, body: String(body || "") });
+}
+
+function confirmAction({ title, message, acceptLabel = "Doorgaan", danger = false }) {
+  elements.confirmTitle.textContent = title;
+  elements.confirmMessage.textContent = message;
+  elements.confirmAccept.textContent = acceptLabel;
+  elements.confirmAccept.classList.toggle("button-danger", danger);
+  elements.confirmAccept.classList.toggle("button-primary", !danger);
+  elements.confirmDialog.showModal();
+
+  return new Promise((resolve) => {
+    const finish = (answer) => {
+      elements.confirmDialog.close();
+      elements.confirmAccept.removeEventListener("click", accept);
+      elements.confirmCancel.removeEventListener("click", cancel);
+      elements.confirmDialog.removeEventListener("cancel", cancelEvent);
+      resolve(answer);
     };
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+    const accept = () => finish(true);
+    const cancel = () => finish(false);
+    const cancelEvent = (event) => { event.preventDefault(); finish(false); };
+    elements.confirmAccept.addEventListener("click", accept);
+    elements.confirmCancel.addEventListener("click", cancel);
+    elements.confirmDialog.addEventListener("cancel", cancelEvent);
   });
 }
 
-function loadImageFromFile(file) {
-  return new Promise((resolve, reject) => {
-    const url = URL.createObjectURL(file);
-    const image = new Image();
-    image.onload = () => {
-      URL.revokeObjectURL(url);
-      resolve(image);
-    };
-    image.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error("De gekozen afbeelding kon niet worden geopend."));
-    };
-    image.src = url;
+async function allowLeavingEditor() {
+  if (!state.dirty) return true;
+  return confirmAction({
+    title: "Niet-opgeslagen wijzigingen",
+    message: "Je wijzigingen staan veilig als lokale reservekopie, maar zijn nog niet opgeslagen op de website. Wil je toch weggaan?",
+    acceptLabel: "Toch weggaan",
+    danger: true,
   });
 }
 
-async function convertImageToWebP(file) {
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Kies een geldige afbeelding.");
-  }
-
-  if (!["image/png", "image/jpeg", "image/webp", "image/gif"].includes(file.type)) {
-    throw new Error("Gebruik een PNG, JPG, GIF of WebP afbeelding.");
-  }
-
-  const image = await loadImageFromFile(file);
-  const canvas = document.createElement("canvas");
-  canvas.width = image.naturalWidth || image.width;
-  canvas.height = image.naturalHeight || image.height;
-  const context = canvas.getContext("2d");
-
-  if (!context) {
-    throw new Error("De browser kon de afbeelding niet verwerken.");
-  }
-
-  context.drawImage(image, 0, 0);
-
-  const blob = await new Promise((resolve) => {
-    canvas.toBlob(resolve, "image/webp", 0.9);
-  });
-
-  if (!blob) {
-    throw new Error("De afbeelding kon niet naar WebP worden omgezet.");
-  }
-
-  const webpName = `${file.name.replace(/\.[^/.]+$/, "") || "afbeelding"}.webp`;
-  return new File([blob], webpName, { type: "image/webp" });
+async function goToOverview() {
+  if (!(await allowLeavingEditor())) return;
+  abortCurrentRequest();
+  destroyRichEditor();
+  state.uploadQueue.clear();
+  state.item = null;
+  state.dirty = false;
+  state.activeType = "";
+  updateRouteUI("overview");
+  focusMainHeading(elements.overview);
 }
 
-function renderList() {
-  const config = viewConfig[state.activeView];
-  elements.viewEyebrow.textContent = config.eyebrow;
-  elements.viewTitle.textContent = config.title;
-  elements.listTitle.textContent = config.listTitle;
-  elements.newItemButton.textContent = config.buttonLabel;
-  elements.dashboardGrid.classList.toggle("is-home-layout", state.activeView === "home");
-  elements.listCard.classList.toggle("hidden", state.activeView === "home");
-  elements.newItemButton.classList.toggle("hidden", state.activeView === "home");
-  elements.refreshButton.classList.toggle("hidden", state.activeView === "home");
-
-  if (state.activeView === "home") {
-    elements.contentList.innerHTML = "";
-    teardownListObserver();
-    return;
-  }
-
-  const items = state.lists[state.activeView] || [];
-  const pagination = state.listPagination[state.activeView];
-  if (!items.length) {
-    elements.contentList.innerHTML = `<p class="list-item-summary">Nog geen items gevonden.</p>`;
-    teardownListObserver();
-    return;
-  }
-
-  elements.contentList.innerHTML = "";
-  for (const item of items) {
-    const node = elements.itemTemplate.content.cloneNode(true);
-    node.querySelector(".list-item-eyebrow").textContent = formatListMeta(item);
-    node.querySelector("h4").textContent = item.title;
-    node.querySelector(".list-item-summary").textContent = item.summary;
-    node.querySelector(".list-item-action").addEventListener("click", () => loadItem(item.path));
-    elements.contentList.appendChild(node);
-  }
-
-  if (pagination.loading) {
-    const loadingNode = document.createElement("p");
-    loadingNode.className = "list-loading";
-    loadingNode.textContent = "Meer items laden...";
-    elements.contentList.appendChild(loadingNode);
-  } else if (pagination.hasMore) {
-    const sentinel = document.createElement("div");
-    sentinel.className = "list-sentinel";
-    sentinel.setAttribute("aria-hidden", "true");
-    elements.contentList.appendChild(sentinel);
-    observeListSentinel(sentinel);
-  } else {
-    teardownListObserver();
+function showLoadingList() {
+  elements.contentList.replaceChildren();
+  for (let index = 0; index < 3; index += 1) {
+    const skeleton = document.createElement("div");
+    skeleton.className = "content-card content-card-skeleton";
+    skeleton.setAttribute("aria-hidden", "true");
+    skeleton.innerHTML = "<span></span><span></span><span></span>";
+    elements.contentList.appendChild(skeleton);
   }
 }
 
-function teardownListObserver() {
-  if (listScrollObserver) {
-    listScrollObserver.disconnect();
-    listScrollObserver = null;
-  }
-}
+async function openType(type) {
+  if (state.route === "editor" && !(await allowLeavingEditor())) return;
+  state.activeType = type;
+  state.dirty = false;
+  destroyRichEditor();
+  state.uploadQueue.clear();
 
-function observeListSentinel(node) {
-  teardownListObserver();
-
-  if (!node || typeof IntersectionObserver === "undefined") {
+  if (type === "home") {
+    await loadItem("home");
     return;
   }
 
-  listScrollObserver = new IntersectionObserver(
-    (entries) => {
-      if (entries.some((entry) => entry.isIntersecting)) {
-        loadMoreItems().catch((err) => setMessage(err.message, "error"));
-      }
-    },
-    { root: null, rootMargin: "160px 0px" }
-  );
-
-  listScrollObserver.observe(node);
+  const model = contentModels[type];
+  elements.listKicker.textContent = "Website-inhoud";
+  elements.listTitle.textContent = model.plural;
+  elements.listDescription.textContent = model.description;
+  elements.newItem.textContent = model.newLabel;
+  elements.search.value = "";
+  elements.statusFilter.value = "all";
+  updateRouteUI("list");
+  showLoadingList();
+  focusMainHeading(elements.list);
+  await loadList(true);
 }
 
-async function loadSession() {
-  const payload = await api("/api/cms/session", { method: "GET", headers: {} });
-  state.authenticated = payload.authenticated;
-  updateSidebarCopy();
-  elements.loginPanel.classList.toggle("hidden", state.authenticated);
-  elements.dashboardPanel.classList.toggle("hidden", !state.authenticated);
-  elements.logoutButton.classList.toggle("hidden", !state.authenticated);
-  elements.nav.classList.toggle("hidden", !state.authenticated);
-  if (state.authenticated) {
-    await refreshActiveView();
-  }
-}
-
-async function refreshActiveView() {
-  showEmptyEditorState();
-  setMessage("");
-  if (state.activeView !== "home") {
-    state.lists[state.activeView] = [];
-    state.listPagination[state.activeView] = { offset: 0, limit: 20, hasMore: true, loading: false };
-  }
-  renderList();
-
-  if (state.activeView === "home") {
-    await loadHome();
-    return;
-  }
-
-  await loadMoreItems(true);
-}
-
-async function loadMoreItems(reset = false) {
-  if (state.activeView === "home") {
-    return;
-  }
-
-  const pagination = state.listPagination[state.activeView];
-  if (pagination.loading || (!pagination.hasMore && !reset)) {
-    return;
-  }
-
-  const nextPagination = reset
-    ? { ...pagination, offset: 0, hasMore: true, loading: true }
-    : { ...pagination, loading: true };
-  state.listPagination[state.activeView] = nextPagination;
-  renderList();
+async function loadList(reset = false) {
+  const type = state.activeType;
+  if (!type || type === "home") return;
+  const pagination = state.pagination[type];
+  if (pagination.loading || (!pagination.hasMore && !reset)) return;
+  const { controller, sequence } = beginRequest();
+  state.pagination[type] = { ...pagination, loading: true, ...(reset ? { offset: 0, hasMore: true } : {}) };
+  elements.loadMore.disabled = true;
+  if (reset) showLoadingList();
 
   try {
-    const payload = await api(
-      `/api/cms/items?type=${state.activeView}&offset=${reset ? 0 : pagination.offset}&limit=${pagination.limit}`,
-      { method: "GET", headers: {} }
-    );
-
-    state.lists[state.activeView] = reset
-      ? payload.items
-      : [...state.lists[state.activeView], ...payload.items];
-
-    state.listPagination[state.activeView] = {
-      ...pagination,
-      offset: (reset ? 0 : pagination.offset) + payload.items.length,
-      limit: payload.limit || pagination.limit,
+    const offset = reset ? 0 : pagination.offset;
+    const payload = await cmsClient.list(type, { offset, limit: pagination.limit, signal: controller.signal });
+    if (sequence !== state.requestSequence || type !== state.activeType) return;
+    state.lists[type] = reset ? payload.items : [...state.lists[type], ...payload.items];
+    state.pagination[type] = {
+      offset: offset + payload.items.length,
+      limit: payload.limit,
       hasMore: Boolean(payload.hasMore),
       loading: false,
     };
-  } catch (err) {
-    state.listPagination[state.activeView] = { ...pagination, loading: false };
     renderList();
-    throw err;
+  } catch (err) {
+    if (err?.name === "AbortError") return;
+    state.pagination[type] = { ...state.pagination[type], loading: false };
+    renderListError(err);
+  } finally {
+    elements.loadMore.disabled = false;
   }
-
-  renderList();
 }
 
-async function loadItem(path) {
-  const payload = await api(`/api/cms/items?type=${state.activeView}&path=${encodeURIComponent(path)}`, {
-    method: "GET",
-    headers: {},
+function renderListError(err) {
+  elements.contentList.replaceChildren();
+  const panel = document.createElement("div");
+  panel.className = "empty-state error-state";
+  const title = document.createElement("h2");
+  title.textContent = "De inhoud kon niet worden geladen";
+  const message = document.createElement("p");
+  message.textContent = err.message;
+  const retry = document.createElement("button");
+  retry.className = "button button-secondary";
+  retry.type = "button";
+  retry.textContent = "Opnieuw proberen";
+  retry.addEventListener("click", () => loadList(true));
+  panel.append(title, message, retry);
+  elements.contentList.append(panel);
+  handleSessionError(err);
+}
+
+function filteredItems() {
+  const query = elements.search.value.trim().toLocaleLowerCase("nl-NL");
+  const status = elements.statusFilter.value;
+  return (state.lists[state.activeType] || []).filter((item) => {
+    const matchesQuery = !query || `${item.title} ${item.summary} ${item.author}`.toLocaleLowerCase("nl-NL").includes(query);
+    const matchesStatus = status === "all" || (status === "draft" ? item.draft : !item.draft);
+    return matchesQuery && matchesStatus;
   });
-  renderEditor(payload.item);
 }
 
-async function loadHome() {
-  const payload = await api("/api/cms/items?type=home", { method: "GET", headers: {} });
-  renderEditor(payload.item);
-}
+function renderList() {
+  elements.contentList.replaceChildren();
+  const items = filteredItems();
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state";
+    const title = document.createElement("h2");
+    title.textContent = elements.search.value || elements.statusFilter.value !== "all" ? "Geen resultaten" : `Nog geen ${contentModels[state.activeType].plural.toLowerCase()}`;
+    const copy = document.createElement("p");
+    copy.textContent = elements.search.value || elements.statusFilter.value !== "all" ? "Pas je zoekopdracht of filter aan." : `Maak het eerste ${contentModels[state.activeType].singular} aan.`;
+    empty.append(title, copy);
+    elements.contentList.append(empty);
+  }
 
-function collectFormData() {
-  if (state.editorInstance && state.activeView === "blogs") {
-    const bodyField = elements.editorFields.querySelector('textarea[name="body"]');
-    if (bodyField) {
-      bodyField.value = collapseEditorBodyAssetUrls(state.editorInstance.getMarkdown(), state.currentItem?.path || "");
+  for (const item of items) {
+    const card = document.createElement("article");
+    card.className = "content-card";
+    const body = document.createElement("div");
+    body.className = "content-card-body";
+    const meta = document.createElement("div");
+    meta.className = "content-card-meta";
+    const status = document.createElement("span");
+    status.className = `status-badge ${item.draft ? "status-draft" : "status-published"}`;
+    status.textContent = item.draft ? "Concept" : "Gepubliceerd";
+    const date = document.createElement("span");
+    date.textContent = formatDutchDate(item.date, state.activeType === "events");
+    meta.append(status, date);
+    const title = document.createElement("h2");
+    title.textContent = item.title;
+    const summary = document.createElement("p");
+    summary.textContent = item.summary || "Geen samenvatting ingevuld.";
+    body.append(meta, title, summary);
+
+    const actions = document.createElement("div");
+    actions.className = "content-card-actions";
+    if (!item.draft && item.publicUrl) {
+      const view = document.createElement("a");
+      view.className = "button button-quiet";
+      view.href = item.publicUrl;
+      view.target = "_blank";
+      view.rel = "noopener";
+      view.textContent = "Bekijken";
+      view.setAttribute("aria-label", `${item.title} bekijken op de website`);
+      actions.append(view);
     }
+    const edit = document.createElement("button");
+    edit.className = "button button-secondary";
+    edit.type = "button";
+    edit.textContent = "Bewerken";
+    edit.setAttribute("aria-label", `${item.title} bewerken`);
+    edit.addEventListener("click", () => loadItem(state.activeType, item.path));
+    actions.append(edit);
+    card.append(body, actions);
+    elements.contentList.append(card);
   }
 
-  const formData = new FormData(elements.editorForm);
-  const config = viewConfig[state.activeView];
-  const fields = {};
-
-  for (const field of config.fields) {
-    if (field.name === "body") {
-      continue;
-    }
-
-    if (field.type === "checkbox") {
-      fields[field.name] = formData.get(field.name) === "on";
-    } else {
-      fields[field.name] = String(formData.get(field.name) || "").trim();
-    }
-  }
-
-  return {
-    fields,
-    body: String(formData.get("body") || "").trim(),
-    uploads: [],
-  };
+  setHidden(elements.loadMore, !state.pagination[state.activeType]?.hasMore);
 }
 
-async function processPendingFieldImages(payload) {
-  const pendingImages = Object.values(state.pendingFieldImages);
-  if (!pendingImages.length) {
-    return payload;
-  }
-
-  const fields = { ...payload.fields };
-  const uploads = [...(payload.uploads || [])];
-
-  for (const pendingImage of pendingImages) {
-    const currentValue = fields[pendingImage.fieldName];
-    if (currentValue !== pendingImage.objectUrl) {
-      if (pendingImage.objectUrl) {
-        URL.revokeObjectURL(pendingImage.objectUrl);
-      }
-      delete state.pendingFieldImages[pendingImage.fieldName];
-      continue;
-    }
-
-    setMessage("Afbeeldingen voorbereiden voor opslaan...", "");
-    const token = `__CMS_UPLOAD_${crypto.randomUUID()}__`;
-    const base64 = await fileToBase64(pendingImage.file);
-    uploads.push({
-      token,
-      filename: pendingImage.file.name,
-      mimeType: pendingImage.file.type,
-      base64,
-    });
-    fields[pendingImage.fieldName] = token;
-
-    if (pendingImage.objectUrl) {
-      URL.revokeObjectURL(pendingImage.objectUrl);
-    }
-    delete state.pendingFieldImages[pendingImage.fieldName];
-  }
-
-  return { ...payload, fields, uploads };
-}
-
-async function processPendingEditorImages(payload) {
-  if (state.activeView !== "blogs" || !state.pendingEditorImages.length) {
-    return payload;
-  }
-
-  let body = payload.body;
-  const uploads = [...(payload.uploads || [])];
-  const remainingImages = [];
-
-  for (const pendingImage of state.pendingEditorImages) {
-    if (!body.includes(pendingImage.objectUrl)) {
-      if (pendingImage.objectUrl) {
-        URL.revokeObjectURL(pendingImage.objectUrl);
-      }
-      continue;
-    }
-
-    const token = `__CMS_UPLOAD_${crypto.randomUUID()}__`;
-    setMessage("Blogafbeeldingen voorbereiden voor opslaan...", "");
-    const base64 = await fileToBase64(pendingImage.file);
-    uploads.push({
-      token,
-      filename: pendingImage.file.name,
-      mimeType: pendingImage.file.type,
-      base64,
-    });
-    body = body.split(pendingImage.objectUrl).join(token);
-
-    if (pendingImage.objectUrl) {
-      URL.revokeObjectURL(pendingImage.objectUrl);
-    }
-  }
-
-  state.pendingEditorImages = remainingImages;
-  return { ...payload, body, uploads };
-}
-
-function validatePayload(payload) {
-  const config = viewConfig[state.activeView];
-  for (const field of config.fields) {
-    if (field.required) {
-      const value = field.name === "body" ? payload.body : payload.fields[field.name];
-      if (!value) {
-        throw new Error(`Vul "${field.label}" in.`);
-      }
-    }
+async function loadItem(type, path = "") {
+  const { controller, sequence } = beginRequest();
+  state.activeType = type;
+  updateRouteUI("editor");
+  elements.editorFields.innerHTML = '<div class="editor-loading"><span></span><p>Inhoud laden…</p></div>';
+  elements.editorTitle.textContent = type === "home" ? "Homepagina laden…" : "Inhoud laden…";
+  focusMainHeading(elements.editor);
+  try {
+    const payload = await cmsClient.item(type, path, controller.signal);
+    if (sequence !== state.requestSequence || type !== state.activeType) return;
+    renderEditor(payload.item);
+  } catch (err) {
+    if (err?.name === "AbortError") return;
+    renderEditorLoadError(err, () => loadItem(type, path));
   }
 }
 
-function formatDutchDate(dateValue, withTime = false) {
-  if (!dateValue) {
-    return "";
-  }
-
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) {
-    return String(dateValue);
-  }
-
-  return new Intl.DateTimeFormat("nl-NL", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-    ...(withTime ? { hour: "2-digit", minute: "2-digit" } : {}),
-  }).format(date);
+function renderEditorLoadError(err, retry) {
+  elements.editorFields.replaceChildren();
+  const panel = document.createElement("div");
+  panel.className = "empty-state error-state";
+  panel.innerHTML = "<h2>De inhoud kon niet worden geopend</h2>";
+  const copy = document.createElement("p");
+  copy.textContent = err.message;
+  const button = document.createElement("button");
+  button.className = "button button-secondary";
+  button.type = "button";
+  button.textContent = "Opnieuw proberen";
+  button.addEventListener("click", retry);
+  panel.append(copy, button);
+  elements.editorFields.append(panel);
+  handleSessionError(err);
 }
 
-function hasExplicitTime(dateValue) {
-  return typeof dateValue === "string" && dateValue.includes("T");
+function createHelp(field, inputId) {
+  if (!field.help) return null;
+  const help = document.createElement("p");
+  help.className = "field-help";
+  help.id = `${inputId}-help`;
+  help.textContent = field.help;
+  return help;
 }
 
-function formatListMeta(item) {
-  const parts = [];
-  const showTime = hasExplicitTime(item.date);
-  const formattedDate = formatDutchDate(item.date, showTime);
-
-  if (formattedDate) {
-    parts.push(formattedDate);
-  }
-
-  parts.push(item.draft ? "concept" : "gepubliceerd");
-  return parts.join(" · ");
+function createError(fieldName, inputId) {
+  const error = document.createElement("p");
+  error.className = "field-error";
+  error.id = `${inputId}-error`;
+  error.dataset.errorFor = fieldName;
+  error.setAttribute("aria-live", "polite");
+  return error;
 }
 
-function updateCurrentItemState(response, payload) {
-  if (!response?.path) {
-    return;
-  }
-
-  state.currentItem = {
-    ...(state.currentItem || {}),
-    path: response.path,
-    sha: response.sha || state.currentItem?.sha || "",
-    fields: { ...payload.fields },
-    body: payload.body,
-    type: state.activeView,
-  };
-
-  elements.editorMeta.innerHTML = `<div class="meta-chip">Bewerkt bestand: ${response.path}</div>`;
-  elements.editorMeta.classList.remove("hidden");
+function describedBy(field, inputId) {
+  return [field.help ? `${inputId}-help` : "", `${inputId}-error`].filter(Boolean).join(" ");
 }
 
-function upsertListItemFromPayload(response, payload) {
-  if (state.activeView === "home" || !response?.path) {
-    return;
+function createStandardField(field, value) {
+  const wrapper = document.createElement("div");
+  wrapper.className = `field${field.layout === "half" ? " field-half" : ""}`;
+  wrapper.dataset.fieldWrapper = field.name;
+  if (field.condition) wrapper.dataset.condition = field.condition;
+  const inputId = `field-${field.name}`;
+  const label = document.createElement("label");
+  label.htmlFor = inputId;
+  label.textContent = field.label;
+  if (field.required) {
+    const required = document.createElement("span");
+    required.className = "required-mark";
+    required.textContent = " verplicht";
+    label.append(required);
   }
 
-  const summary = String(payload.fields.summary || payload.body.split("\n").find(Boolean) || "").trim();
-  const nextItem = {
-    path: response.path,
-    title: payload.fields.title || "Zonder titel",
-    date: payload.fields.date || "",
-    draft: Boolean(payload.fields.draft),
-    author: payload.fields.author || payload.fields.organiser || "",
-    summary,
-    type: state.activeView,
-  };
-
-  const items = [...(state.lists[state.activeView] || [])];
-  const existingIndex = items.findIndex((item) => item.path === response.path);
-  if (existingIndex >= 0) {
-    items[existingIndex] = nextItem;
+  let input;
+  if (field.type === "textarea") {
+    input = document.createElement("textarea");
+    input.rows = field.rows || 5;
   } else {
-    items.unshift(nextItem);
+    input = document.createElement("input");
+    input.type = field.type;
+  }
+  input.id = inputId;
+  input.name = field.name;
+  input.dataset.contentInput = "true";
+  input.value = inputValue(field, value);
+  if (field.placeholder) input.placeholder = field.placeholder;
+  if (field.required) input.required = true;
+  if (field.maxLength) input.maxLength = field.maxLength;
+  input.setAttribute("aria-describedby", describedBy(field, inputId));
+  wrapper.append(label, input);
+  const help = createHelp(field, inputId);
+  if (help) wrapper.append(help);
+  if (field.maxLength) {
+    const count = document.createElement("span");
+    count.className = "character-count";
+    count.dataset.countFor = field.name;
+    count.textContent = `${input.value.length}/${field.maxLength}`;
+    wrapper.append(count);
+  }
+  wrapper.append(createError(field.name, inputId));
+  return wrapper;
+}
+
+function createCheckboxField(field, value) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "field toggle-field";
+  wrapper.dataset.fieldWrapper = field.name;
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.id = `field-${field.name}`;
+  input.name = field.name;
+  input.checked = Boolean(value);
+  input.dataset.contentInput = "true";
+  const label = document.createElement("label");
+  label.htmlFor = input.id;
+  const copy = document.createElement("span");
+  const strong = document.createElement("strong");
+  strong.textContent = field.label;
+  const small = document.createElement("small");
+  small.textContent = "Je kunt dit later altijd weer uitzetten.";
+  copy.append(strong, small);
+  label.append(input, copy);
+  wrapper.append(label, createError(field.name, input.id));
+  return wrapper;
+}
+
+function imagePreviewSource(value, itemPath) {
+  const queued = state.uploadQueue.get(value);
+  return queued?.objectUrl || resolveImageUrl(value, itemPath);
+}
+
+function createImageField(field, value, item) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "field image-field";
+  wrapper.dataset.fieldWrapper = field.name;
+  const inputId = `field-${field.name}`;
+  const heading = document.createElement("div");
+  heading.className = "image-field-heading";
+  const label = document.createElement("span");
+  label.className = "field-label";
+  label.textContent = field.label;
+  const help = createHelp(field, inputId);
+  heading.append(label);
+  if (help) heading.append(help);
+
+  const hidden = document.createElement("input");
+  hidden.type = "hidden";
+  hidden.id = inputId;
+  hidden.name = field.name;
+  hidden.value = value || "";
+  hidden.dataset.contentInput = "true";
+
+  const picker = document.createElement("div");
+  picker.className = "image-picker";
+  const preview = document.createElement("div");
+  preview.className = "image-picker-preview";
+  const image = document.createElement("img");
+  image.alt = "Voorbeeld van de gekozen afbeelding";
+  const empty = document.createElement("div");
+  empty.className = "image-picker-empty";
+  empty.innerHTML = "<strong>Nog geen afbeelding</strong><span>JPG, PNG of WebP</span>";
+  preview.append(image, empty);
+  const source = imagePreviewSource(value, item.path);
+  image.src = source || "";
+  preview.classList.toggle("is-empty", !source);
+
+  const controls = document.createElement("div");
+  controls.className = "image-picker-controls";
+  const fileInput = document.createElement("input");
+  fileInput.type = "file";
+  fileInput.accept = "image/jpeg,image/png,image/webp";
+  fileInput.className = "visually-hidden";
+  fileInput.id = `${inputId}-file`;
+  const choose = document.createElement("button");
+  choose.type = "button";
+  choose.className = "button button-secondary";
+  choose.textContent = source ? "Afbeelding vervangen" : "Afbeelding kiezen";
+  choose.addEventListener("click", () => fileInput.click());
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "button button-quiet";
+  remove.textContent = "Afbeelding verwijderen";
+  remove.disabled = !source;
+  controls.append(fileInput, choose, remove);
+  picker.append(preview, controls);
+
+  const altWrapper = document.createElement("div");
+  altWrapper.className = "field image-alt-field";
+  const altId = `field-${field.altName}`;
+  const altLabel = document.createElement("label");
+  altLabel.htmlFor = altId;
+  altLabel.textContent = "Beschrijving voor bezoekers die de afbeelding niet zien";
+  const altInput = document.createElement("input");
+  altInput.type = "text";
+  altInput.id = altId;
+  altInput.name = field.altName;
+  altInput.maxLength = 180;
+  altInput.value = item.fields[field.altName] || "";
+  altInput.placeholder = "Bijvoorbeeld: jongeren in gesprek tijdens een bijeenkomst";
+  altInput.dataset.contentInput = "true";
+  altInput.setAttribute("aria-describedby", `${altId}-help ${altId}-error`);
+  const altHelp = document.createElement("p");
+  altHelp.className = "field-help";
+  altHelp.id = `${altId}-help`;
+  altHelp.textContent = "Kort en concreet is genoeg. Laat dit leeg als er geen afbeelding is.";
+  altWrapper.append(altLabel, altInput, altHelp, createError(field.altName, altId));
+
+  fileInput.addEventListener("change", async () => {
+    const file = fileInput.files?.[0];
+    fileInput.value = "";
+    if (!file) return;
+    choose.disabled = true;
+    choose.textContent = "Afbeelding voorbereiden…";
+    try {
+      const oldToken = hidden.value;
+      const oldQueued = state.uploadQueue.get(oldToken);
+      const previousValue = oldQueued ? oldQueued.previousValue : hidden.value;
+      const staged = await state.uploadQueue.stage(file, { fieldName: field.name, previousValue });
+      if (oldQueued) state.uploadQueue.remove(oldToken);
+      hidden.value = staged.token;
+      image.src = staged.objectUrl;
+      preview.classList.remove("is-empty");
+      remove.disabled = false;
+      choose.textContent = "Afbeelding vervangen";
+      announce(`Afbeelding klaar (${staged.width} × ${staged.height} pixels).`, "success");
+      markDirty();
+    } catch (err) {
+      announce(err.message, "error");
+      choose.textContent = source ? "Afbeelding vervangen" : "Afbeelding kiezen";
+    } finally {
+      choose.disabled = false;
+    }
+  });
+
+  remove.addEventListener("click", () => {
+    if (state.uploadQueue.get(hidden.value)) state.uploadQueue.remove(hidden.value);
+    hidden.value = "";
+    image.removeAttribute("src");
+    preview.classList.add("is-empty");
+    remove.disabled = true;
+    choose.textContent = "Afbeelding kiezen";
+    markDirty();
+  });
+
+  wrapper.append(heading, hidden, picker, altWrapper, createError(field.name, inputId));
+  return wrapper;
+}
+
+function createRichTextField(field) {
+  const wrapper = document.createElement("div");
+  wrapper.className = "field rich-text-field";
+  wrapper.dataset.fieldWrapper = field.name;
+  const label = document.createElement("span");
+  label.className = "field-label";
+  label.id = "body-editor-label";
+  label.textContent = field.label;
+  const help = document.createElement("p");
+  help.className = "field-help";
+  help.textContent = "Gebruik koppen, vet, cursief, links en lijsten. Afbeeldingen kun je via de werkbalk toevoegen.";
+  const host = document.createElement("div");
+  host.className = "rich-editor-host";
+  host.setAttribute("aria-labelledby", label.id);
+  wrapper.append(label, help, host, createError("body", "body-editor"));
+  return { wrapper, host };
+}
+
+function createSection(section, item, type) {
+  const container = document.createElement("section");
+  container.className = "form-section";
+  container.dataset.section = section.id;
+  const header = document.createElement("header");
+  header.className = "form-section-heading";
+  const step = document.createElement("span");
+  step.textContent = section.label;
+  const title = document.createElement("h2");
+  title.textContent = section.title;
+  const copy = document.createElement("p");
+  copy.textContent = section.description;
+  header.append(step, title, copy);
+  const grid = document.createElement("div");
+  grid.className = "field-grid";
+  let richHost = null;
+
+  for (const field of section.fields) {
+    const value = field.name === "body" ? item.body : item.fields[field.name];
+    let fieldNode;
+    if (field.type === "checkbox") fieldNode = createCheckboxField(field, value);
+    else if (field.type === "image") fieldNode = createImageField(field, value, item);
+    else if (field.type === "richtext") {
+      const rich = createRichTextField(field);
+      fieldNode = rich.wrapper;
+      richHost = rich.host;
+    } else fieldNode = createStandardField(field, value);
+    grid.append(fieldNode);
+  }
+  container.append(header, grid);
+  return { container, richHost };
+}
+
+function renderHomeTabs(model) {
+  elements.sectionTabs.replaceChildren();
+  setHidden(elements.sectionTabs, false);
+  for (const section of model.sections) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = section.label;
+    button.dataset.homeSection = section.id;
+    button.classList.toggle("is-active", section.id === state.activeHomeSection);
+    if (section.id === state.activeHomeSection) button.setAttribute("aria-current", "step");
+    button.addEventListener("click", () => selectHomeSection(section.id));
+    elements.sectionTabs.append(button);
+  }
+}
+
+function selectHomeSection(sectionId) {
+  state.activeHomeSection = sectionId;
+  for (const section of elements.editorFields.querySelectorAll("[data-section]")) {
+    setHidden(section, section.dataset.section !== sectionId);
+  }
+  for (const button of elements.sectionTabs.querySelectorAll("button")) {
+    const active = button.dataset.homeSection === sectionId;
+    button.classList.toggle("is-active", active);
+    if (active) button.setAttribute("aria-current", "step");
+    else button.removeAttribute("aria-current");
+  }
+  const visible = elements.editorFields.querySelector(`[data-section="${CSS.escape(sectionId)}"]`);
+  if (visible) requestAnimationFrame(() => visible.querySelector("input, textarea, button")?.focus());
+}
+
+function renderEditor(item, { skipRecovery = false } = {}) {
+  destroyRichEditor();
+  state.uploadQueue.clear();
+  state.item = deepClone(item);
+  state.dirty = false;
+  state.pendingRecovery = null;
+  state.activeHomeSection = "intro";
+  const type = item.type;
+  const model = contentModels[type];
+  elements.editorKicker.textContent = item.path ? "Bewerken" : `Nieuw ${model.singular}`;
+  elements.editorTitle.textContent = type === "home" ? "Homepagina bewerken" : item.path ? item.fields.title : model.newLabel;
+  elements.editorDescription.textContent = model.description;
+  elements.publish.textContent = model.publishLabel;
+  setHidden(elements.saveDraft, type === "home");
+  setHidden(elements.deleteButton, type === "home" || !item.path);
+  elements.contentStatus.textContent = type === "home" ? "Live" : item.fields.draft ? "Concept" : "Gepubliceerd";
+  elements.contentStatus.className = `status-pill ${item.fields.draft ? "status-draft" : "status-published"}`;
+  elements.saveState.textContent = "Nog geen wijzigingen";
+  clearValidation();
+  setHidden(elements.recovery, true);
+  elements.editorFields.replaceChildren();
+
+  let richHost = null;
+  for (const section of model.sections) {
+    const rendered = createSection(section, item, type);
+    elements.editorFields.append(rendered.container);
+    if (rendered.richHost) richHost = rendered.richHost;
+  }
+  if (type === "home") {
+    renderHomeTabs(model);
+    selectHomeSection(state.activeHomeSection);
+  } else {
+    setHidden(elements.sectionTabs, true);
   }
 
-  items.sort((a, b) => String(b.date).localeCompare(String(a.date)));
-  state.lists[state.activeView] = items;
-  renderList();
+  if (richHost) {
+    state.richEditor = createRichTextEditor({
+      host: richHost,
+      initialValue: item.body,
+      itemPath: item.path,
+      uploadQueue: state.uploadQueue,
+      onChange: markDirty,
+      onMessage: announce,
+    });
+  }
+  updateConditions();
+  updateCharacterCounts();
+  state.currentDraftKey = draftStorageKey(type, item.path);
+  if (!skipRecovery) findRecoveryDraft();
+  updateRouteUI("editor");
+  focusMainHeading(elements.editor);
+}
+
+function collectForm() {
+  const fields = { ...(state.item?.fields || {}) };
+  for (const input of elements.editorForm.querySelectorAll("[data-content-input]")) {
+    fields[input.name] = input.type === "checkbox" ? input.checked : input.value.trim();
+  }
+  const body = state.richEditor ? state.richEditor.getMarkdown().trim() : state.item?.body || "";
+  return { fields, body };
+}
+
+function updateConditions() {
+  for (const wrapper of elements.editorFields.querySelectorAll("[data-condition]")) {
+    const controller = elements.editorFields.querySelector(`[name="${CSS.escape(wrapper.dataset.condition)}"]`);
+    const visible = Boolean(controller?.checked);
+    setHidden(wrapper, !visible);
+    for (const input of wrapper.querySelectorAll("input, textarea, select")) input.disabled = !visible;
+  }
+}
+
+function updateCharacterCounts() {
+  for (const count of elements.editorFields.querySelectorAll("[data-count-for]")) {
+    const input = elements.editorFields.querySelector(`[name="${CSS.escape(count.dataset.countFor)}"]`);
+    if (input) count.textContent = `${input.value.length}/${input.maxLength}`;
+  }
+}
+
+function markDirty() {
+  if (!state.item || state.busy) return;
+  state.dirty = true;
+  elements.saveState.textContent = "Wijzigingen nog niet opgeslagen";
+  clearTimeout(state.autosaveTimer);
+  state.autosaveTimer = setTimeout(saveLocalDraft, 900);
+}
+
+function saveLocalDraft() {
+  if (!state.dirty || !state.item) return;
+  try {
+    const collected = collectForm();
+    const safe = state.uploadQueue.safeLocalCopy(collected.fields, collected.body);
+    localStorage.setItem(state.currentDraftKey, JSON.stringify({
+      savedAt: Date.now(),
+      fields: safe.fields,
+      body: safe.body,
+      omittedImages: safe.omittedImages,
+    }));
+    const time = new Intl.DateTimeFormat("nl-NL", { hour: "2-digit", minute: "2-digit" }).format(new Date());
+    elements.saveState.textContent = safe.omittedImages
+      ? `Tekst lokaal bewaard om ${time}; nieuwe afbeeldingen worden bewaard na opslaan`
+      : `Lokale reservekopie bewaard om ${time}`;
+  } catch {
+    elements.saveState.textContent = "Lokale reservekopie kon niet worden bewaard";
+  }
+}
+
+function findRecoveryDraft() {
+  try {
+    const raw = localStorage.getItem(state.currentDraftKey);
+    if (!raw) return;
+    const recovery = JSON.parse(raw);
+    if (!recovery?.fields || draftSignature(recovery.fields, recovery.body) === draftSignature(state.item.fields, state.item.body)) return;
+    state.pendingRecovery = recovery;
+    setHidden(elements.recovery, false);
+  } catch {
+    localStorage.removeItem(state.currentDraftKey);
+  }
+}
+
+function clearLocalDraft() {
+  if (state.currentDraftKey) localStorage.removeItem(state.currentDraftKey);
+  state.pendingRecovery = null;
+  setHidden(elements.recovery, true);
+}
+
+function clearValidation() {
+  setHidden(elements.validationSummary, true);
+  elements.validationSummary.querySelector("ul").replaceChildren();
+  for (const wrapper of elements.editorFields.querySelectorAll(".field-has-error")) wrapper.classList.remove("field-has-error");
+  for (const error of elements.editorFields.querySelectorAll("[data-error-for]")) error.textContent = "";
+  for (const input of elements.editorFields.querySelectorAll("[aria-invalid]")) input.removeAttribute("aria-invalid");
+}
+
+function fieldLabel(name) {
+  if (name === "body") return "Inhoud";
+  if (name.endsWith("_alt")) return "Beschrijving van de afbeelding";
+  return fieldsForType(state.activeType).find((field) => field.name === name)?.label || "Veld";
+}
+
+function sectionForField(name) {
+  return contentModels[state.activeType].sections.find((section) => section.fields.some((field) => field.name === name || field.altName === name));
+}
+
+function showValidation(errors) {
+  clearValidation();
+  const list = elements.validationSummary.querySelector("ul");
+  for (const [name, message] of Object.entries(errors)) {
+    const error = elements.editorFields.querySelector(`[data-error-for="${CSS.escape(name)}"]`);
+    const input = elements.editorFields.querySelector(`[name="${CSS.escape(name)}"]`);
+    const wrapper = error?.closest(".field") || input?.closest(".field");
+    if (error) error.textContent = message;
+    if (wrapper) wrapper.classList.add("field-has-error");
+    if (input) input.setAttribute("aria-invalid", "true");
+    const item = document.createElement("li");
+    item.textContent = `${fieldLabel(name)}: ${message}`;
+    list.append(item);
+  }
+  setHidden(elements.validationSummary, false);
+  const firstField = Object.keys(errors)[0];
+  if (state.activeType === "home") {
+    const section = sectionForField(firstField);
+    if (section) selectHomeSection(section.id);
+  }
+  elements.validationSummary.focus();
+}
+
+async function saveItem(intent) {
+  if (state.busy || !state.item) return;
+  clearValidation();
+  const collected = collectForm();
+  if (state.activeType !== "home") collected.fields.draft = intent === "draft";
+  const errors = validateItem(state.activeType, collected.fields, collected.body);
+  if (Object.keys(errors).length) {
+    showValidation(errors);
+    announce("Controleer de gemarkeerde velden.", "error");
+    return;
+  }
+
+  setBusy(true, intent === "draft" ? "Concept opslaan…" : "Publiceren…");
+  try {
+    const prepared = await state.uploadQueue.preparePayload(collected.fields, collected.body);
+    const response = await cmsClient.save({
+      type: state.activeType,
+      path: state.item.path,
+      sha: state.item.sha,
+      fields: prepared.fields,
+      body: prepared.body,
+      uploads: prepared.uploads,
+    });
+    clearLocalDraft();
+    const savedItem = {
+      type: state.activeType,
+      path: response.path,
+      publicUrl: response.publicUrl,
+      sha: response.sha,
+      fields: response.fields,
+      body: response.body,
+    };
+    updateCachedList(savedItem);
+    applySavedItem(savedItem);
+    elements.saveState.textContent = intent === "draft" ? "Concept opgeslagen" : "Gepubliceerd; de website wordt bijgewerkt";
+    announce(intent === "draft" ? "Concept veilig opgeslagen." : "Gepubliceerd. De website wordt nu bijgewerkt.", "success");
+  } catch (err) {
+    if (err instanceof CmsApiError && err.details?.fields) showValidation(err.details.fields);
+    announce(err.message, "error");
+    elements.saveState.textContent = "Opslaan mislukt; je wijzigingen staan nog in de editor";
+    handleSessionError(err);
+  } finally {
+    setBusy(false);
+  }
+}
+
+function applySavedItem(item) {
+  state.item = deepClone(item);
+  for (const input of elements.editorForm.querySelectorAll("[data-content-input]")) {
+    if (!(input.name in item.fields)) continue;
+    if (input.type === "checkbox") input.checked = Boolean(item.fields[input.name]);
+    else input.value = inputValue({ type: input.type }, item.fields[input.name]);
+  }
+  if (state.richEditor) state.richEditor.setMarkdown(item.body);
+
+  for (const field of fieldsForType(item.type).filter((candidate) => candidate.type === "image")) {
+    const wrapper = elements.editorFields.querySelector(`[data-field-wrapper="${CSS.escape(field.name)}"]`);
+    const preview = wrapper?.querySelector(".image-picker-preview");
+    const image = preview?.querySelector("img");
+    const remove = [...(wrapper?.querySelectorAll("button") || [])].find((button) => button.textContent.includes("verwijderen"));
+    const choose = [...(wrapper?.querySelectorAll("button") || [])].find((button) => button.textContent.includes("Afbeelding"));
+    const source = resolveImageUrl(item.fields[field.name], item.path);
+    if (image) image.src = source || "";
+    preview?.classList.toggle("is-empty", !source);
+    if (remove) remove.disabled = !source;
+    if (choose) choose.textContent = source ? "Afbeelding vervangen" : "Afbeelding kiezen";
+  }
+  state.uploadQueue.clear();
+  state.currentDraftKey = draftStorageKey(item.type, item.path);
+  state.pendingRecovery = null;
+  state.dirty = false;
+  elements.editorKicker.textContent = "Bewerken";
+  elements.editorTitle.textContent = item.type === "home" ? "Homepagina bewerken" : item.fields.title;
+  elements.contentStatus.textContent = item.type === "home" ? "Live" : item.fields.draft ? "Concept" : "Gepubliceerd";
+  elements.contentStatus.className = `status-pill ${item.fields.draft ? "status-draft" : "status-published"}`;
+  setHidden(elements.deleteButton, item.type === "home");
+  updateConditions();
+  updateCharacterCounts();
+  clearValidation();
+}
+
+function updateCachedList(item) {
+  if (item.type === "home") return;
+  const summary = item.fields.summary || item.body.split("\n").find(Boolean) || "";
+  const listItem = {
+    path: item.path,
+    publicUrl: item.publicUrl,
+    title: item.fields.title,
+    date: item.fields.date,
+    draft: Boolean(item.fields.draft),
+    author: item.fields.author || item.fields.organiser || "",
+    summary,
+    type: item.type,
+  };
+  const items = [...state.lists[item.type]];
+  const index = items.findIndex((candidate) => candidate.path === item.path);
+  if (index >= 0) items[index] = listItem;
+  else items.unshift(listItem);
+  state.lists[item.type] = items.sort((left, right) => String(right.date).localeCompare(String(left.date)));
+}
+
+function currentCoverSource(fields) {
+  const name = state.activeType === "home" ? "about_image" : "image";
+  return imagePreviewSource(fields[name], state.item?.path || "");
+}
+
+function showPreview() {
+  if (!state.item) return;
+  const { fields, body } = collectForm();
+  const type = state.activeType;
+  const isHome = type === "home";
+  setHidden(elements.homePreview, !isHome);
+  setHidden(elements.previewBody, isHome);
+  setHidden(elements.previewMeta, isHome);
+  setHidden(elements.previewSummary, isHome);
+  elements.previewTitle.textContent = isHome ? "Homepagina" : fields.title || "Titel van de inhoud";
+
+  const cover = currentCoverSource(fields);
+  elements.previewImage.src = cover || "";
+  elements.previewImage.alt = isHome ? fields.about_image_alt || "" : fields.image_alt || "";
+  setHidden(elements.previewImageWrap, !cover);
+
+  if (isHome) {
+    elements.homePreview.replaceChildren();
+    const blocks = [
+      ["Introductie", fields.heading],
+      ["Over ons", fields.about],
+      ["Nieuwsbrief", fields.newsletter],
+      ["Steun ons", fields.support],
+      ["Contact", fields.contact],
+    ];
+    for (const [title, copy] of blocks) {
+      const section = document.createElement("section");
+      const heading = document.createElement("h2");
+      heading.textContent = title;
+      const paragraph = document.createElement("p");
+      paragraph.textContent = copy || "Nog geen tekst ingevuld.";
+      section.append(heading, paragraph);
+      elements.homePreview.append(section);
+    }
+  } else {
+    elements.previewMeta.textContent = type === "events"
+      ? [formatDutchDate(fields.date, true), fields.location, fields.organiser].filter(Boolean).join(" · ")
+      : [formatDutchDate(fields.date), fields.author].filter(Boolean).join(" · ");
+    elements.previewSummary.textContent = fields.summary || "";
+    renderMarkdownPreview(elements.previewBody, expandAssetUrls(body, state.item.path));
+  }
+  elements.previewDialog.showModal();
+}
+
+async function deleteItem() {
+  if (!state.item?.path || state.activeType === "home" || state.busy) return;
+  const confirmed = await confirmAction({
+    title: `${contentModels[state.activeType].singular === "blog" ? "Blog" : "Evenement"} verwijderen?`,
+    message: `“${state.item.fields.title}” en de bijbehorende afbeeldingen worden definitief verwijderd. Dit kan niet via het beheer worden teruggedraaid.`,
+    acceptLabel: "Definitief verwijderen",
+    danger: true,
+  });
+  if (!confirmed) return;
+
+  setBusy(true, "Verwijderen…");
+  try {
+    await cmsClient.delete({ type: state.activeType, path: state.item.path, sha: state.item.sha });
+    clearLocalDraft();
+    state.lists[state.activeType] = state.lists[state.activeType].filter((item) => item.path !== state.item.path);
+    state.dirty = false;
+    destroyRichEditor();
+    state.uploadQueue.clear();
+    updateRouteUI("list");
+    renderList();
+    focusMainHeading(elements.list);
+    announce("De inhoud is verwijderd. De website wordt nu bijgewerkt.", "success");
+  } catch (err) {
+    announce(err.message, "error");
+    handleSessionError(err);
+  } finally {
+    setBusy(false);
+  }
+}
+
+function handleSessionError(err) {
+  if (!(err instanceof CmsApiError) || err.status !== 401) return;
+  cmsClient.setSession(null);
+  showAuthenticated(false);
+  elements.loginError.textContent = "Je sessie is verlopen. Log opnieuw in om verder te gaan.";
+  elements.password.focus();
+}
+
+async function boot() {
+  try {
+    const session = await cmsClient.session();
+    cmsClient.setSession(session);
+    showAuthenticated(session.authenticated);
+    if (session.authenticated) {
+      updateRouteUI("overview");
+      focusMainHeading(elements.overview);
+    } else {
+      elements.password.focus();
+    }
+  } catch (err) {
+    showAuthenticated(false);
+    elements.loginError.textContent = err.message;
+  }
 }
 
 elements.loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
-  setLoginError("");
-
+  elements.loginError.textContent = "";
+  const submit = elements.loginForm.querySelector("button[type=submit]");
+  submit.disabled = true;
+  submit.textContent = "Inloggen…";
   try {
-    await api("/api/cms/login", {
-      method: "POST",
-      body: JSON.stringify({ password: elements.passwordInput.value }),
-    });
-    elements.passwordInput.value = "";
-    await loadSession();
+    await cmsClient.login(elements.password.value);
+    elements.password.value = "";
+    const session = await cmsClient.session();
+    cmsClient.setSession(session);
+    showAuthenticated(true);
+    updateRouteUI("overview");
+    focusMainHeading(elements.overview);
   } catch (err) {
-    setLoginError(err.message);
+    elements.loginError.textContent = err.message;
+    elements.password.select();
+  } finally {
+    submit.disabled = false;
+    submit.textContent = "Inloggen";
   }
 });
 
 elements.logoutButton.addEventListener("click", async () => {
-  await api("/api/cms/logout", { method: "POST", body: "{}" });
-  state.authenticated = false;
-  updateSidebarCopy();
-  elements.loginPanel.classList.remove("hidden");
-  elements.dashboardPanel.classList.add("hidden");
-  elements.logoutButton.classList.add("hidden");
-  elements.nav.classList.add("hidden");
-  setMessage("");
+  if (!(await allowLeavingEditor())) return;
+  try { await cmsClient.logout(); }
+  catch (err) { if (err.status !== 401) announce(err.message, "error"); }
+  cmsClient.setSession(null);
+  showAuthenticated(false);
+  elements.password.focus();
 });
 
-elements.navButtons.forEach((button) => {
-  button.addEventListener("click", async () => {
-    state.activeView = button.dataset.view;
-    elements.navButtons.forEach((item) => item.classList.toggle("is-active", item === button));
-    await refreshActiveView();
+elements.brandButton.addEventListener("click", () => {
+  if (state.authenticated) goToOverview();
+  else elements.password.focus();
+});
+
+for (const button of elements.navButtons) {
+  button.addEventListener("click", () => {
+    if (button.dataset.route === "overview") goToOverview();
+    else openType(button.dataset.route);
   });
-});
+}
+for (const button of document.querySelectorAll("[data-open-type]")) {
+  button.addEventListener("click", () => openType(button.dataset.openType));
+}
+for (const button of document.querySelectorAll(".back-to-overview")) button.addEventListener("click", goToOverview);
 
-elements.newItemButton.addEventListener("click", async () => {
-  if (state.activeView === "home") {
-    await loadHome();
-    return;
-  }
-  renderEditor();
-  setMessage(`Nieuw ${state.activeView === "events" ? "evenement" : "blogartikel"} geopend.`, "");
-});
-
-elements.refreshButton.addEventListener("click", async () => {
-  await refreshActiveView();
-});
-
-elements.deleteButton.addEventListener("click", async () => {
-  if (!state.currentItem?.path || state.activeView === "home") {
-    return;
-  }
-
-  const confirmed = window.confirm("Weet je zeker dat je dit item wilt verwijderen?");
-  if (!confirmed) {
-    return;
-  }
-
-  try {
-    setMessage("Item verwijderen...", "");
-    await api("/api/cms/delete", {
-      method: "POST",
-      body: JSON.stringify({
-        type: state.activeView,
-        path: state.currentItem.path,
-        sha: state.currentItem.sha || "",
-      }),
-    });
-    await refreshActiveView();
-    setMessage("Item verwijderd.", "success");
-  } catch (err) {
-    setMessage(err.message, "error");
+elements.editorBack.addEventListener("click", async () => {
+  if (!(await allowLeavingEditor())) return;
+  destroyRichEditor();
+  state.uploadQueue.clear();
+  state.dirty = false;
+  if (state.activeType === "home") await goToOverview();
+  else {
+    updateRouteUI("list");
+    renderList();
+    focusMainHeading(elements.list);
   }
 });
 
-elements.editorForm.addEventListener("submit", async (event) => {
+elements.newItem.addEventListener("click", () => renderEditor(createEmptyItem(state.activeType)));
+elements.refresh.addEventListener("click", () => loadList(true));
+elements.loadMore.addEventListener("click", () => loadList(false));
+elements.search.addEventListener("input", renderList);
+elements.statusFilter.addEventListener("change", renderList);
+
+elements.editorFields.addEventListener("input", (event) => {
+  if (!event.target.matches("[data-content-input]")) return;
+  updateConditions();
+  updateCharacterCounts();
+  const error = elements.editorFields.querySelector(`[data-error-for="${CSS.escape(event.target.name)}"]`);
+  if (error) error.textContent = "";
+  event.target.removeAttribute("aria-invalid");
+  event.target.closest(".field")?.classList.remove("field-has-error");
+  markDirty();
+});
+elements.editorFields.addEventListener("change", (event) => {
+  if (event.target.matches("[data-content-input]")) {
+    updateConditions();
+    markDirty();
+  }
+});
+
+elements.editorForm.addEventListener("submit", (event) => { event.preventDefault(); saveItem("publish"); });
+elements.saveDraft.addEventListener("click", () => saveItem("draft"));
+elements.previewButton.addEventListener("click", showPreview);
+elements.deleteButton.addEventListener("click", deleteItem);
+
+elements.restoreDraft.addEventListener("click", () => {
+  if (!state.pendingRecovery) return;
+  const restored = {
+    ...state.item,
+    fields: { ...state.item.fields, ...state.pendingRecovery.fields },
+    body: state.pendingRecovery.body || "",
+  };
+  const omittedImages = state.pendingRecovery.omittedImages;
+  renderEditor(restored, { skipRecovery: true });
+  state.dirty = true;
+  elements.saveState.textContent = "Lokale versie hersteld; nog niet opgeslagen";
+  announce(omittedImages ? "Lokale tekst hersteld. Kies niet-opgeslagen afbeeldingen opnieuw." : "Lokale versie hersteld.", "success");
+});
+elements.discardDraft.addEventListener("click", clearLocalDraft);
+
+for (const button of document.querySelectorAll("[data-close-dialog]")) {
+  button.addEventListener("click", () => document.getElementById(button.dataset.closeDialog)?.close());
+}
+elements.previewDialog.addEventListener("click", (event) => {
+  if (event.target === elements.previewDialog) elements.previewDialog.close();
+});
+
+window.addEventListener("beforeunload", (event) => {
+  if (!state.dirty) return;
   event.preventDefault();
-  setMessage("Opslaan...", "");
-
-  try {
-    let payload = collectFormData();
-    validatePayload(payload);
-    payload = await processPendingFieldImages(payload);
-    payload = await processPendingEditorImages(payload);
-    const response = await api("/api/cms/save", {
-      method: "POST",
-      body: JSON.stringify({
-        type: state.activeView,
-        path: state.currentItem?.path || "",
-        sha: state.currentItem?.sha || "",
-        fields: payload.fields,
-        body: payload.body,
-        uploads: payload.uploads || [],
-      }),
-    });
-
-    updateCurrentItemState(response, payload);
-    upsertListItemFromPayload(response, payload);
-    setMessage("Opgeslagen. Vergeet niet dat Cloudflare Pages daarna opnieuw moet deployen.", "success");
-  } catch (err) {
-    setMessage(err.message, "error");
-  }
+  event.returnValue = "";
+});
+document.addEventListener("keydown", (event) => {
+  if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "s" || state.route !== "editor") return;
+  event.preventDefault();
+  saveItem(state.activeType === "home" ? "publish" : "draft");
 });
 
-loadSession().catch((err) => {
-  setLoginError(err.message);
-});
+boot();

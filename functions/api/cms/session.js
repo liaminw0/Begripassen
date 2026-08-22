@@ -1,21 +1,14 @@
-import { getCmsConfig, isAuthenticated, json } from "./_lib";
+import { getSession, handleError, json } from "./_core.js";
 
 export async function onRequestGet(context) {
   try {
-    getCmsConfig(context.env);
+    const session = await getSession(context.request, context.env);
+    return json({
+      ok: true,
+      authenticated: Boolean(session),
+      ...(session ? { csrfToken: session.csrfToken, expiresAt: session.expiresAt } : {}),
+    });
   } catch (err) {
-    return json(
-      {
-        ok: false,
-        authenticated: false,
-        error: err.message,
-      },
-      { status: 500 }
-    );
+    return handleError(err);
   }
-
-  return json({
-    ok: true,
-    authenticated: await isAuthenticated(context.request, context.env),
-  });
 }

@@ -39,7 +39,7 @@
   <div id="about-container">
     <div class="section">
     <div class="container-left">
-      <img src="{{ if .Params.about_image }}{{ .Params.about_image | relURL }}{{ else }}{{ "images/about.jpeg" | relURL }}{{ end }}" alt="Over BEGR!P">
+      <img src="{{ if .Params.about_image }}{{ .Params.about_image | relURL }}{{ else }}{{ "images/about.jpeg" | relURL }}{{ end }}" alt="{{ .Params.about_image_alt | default "Over BEGR!P" }}">
     </div>
     <div class="container-right">
       <h1>Over ons</h1>

@@ -3,105 +3,221 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>BEGR!P Beheer</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="/admin/vendor/toastui-editor.min.css" />
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="theme-color" content="#f6f3eb" />
+    <title>BEGR!P beheer</title>
     <link rel="stylesheet" href="/admin/styles.css" />
   </head>
   <body>
-    <div class="cms-shell">
-      <aside class="cms-sidebar">
-        <a class="cms-brand" href="/">
-          <span class="cms-brand-mark">BEGR!P</span>
-          <span class="cms-brand-copy">Beheeromgeving</span>
-        </a>
-        <div class="cms-sidebar-copy">
-          <h1 id="sidebar-title">Teamomgeving</h1>
-          <p id="sidebar-copy">Log in om de website van BEGR!P bij te werken en nieuwe inhoud te publiceren.</p>
-        </div>
-        <nav class="cms-nav hidden" id="cms-nav">
-          <button type="button" data-view="home" class="is-active">Homepagina</button>
-          <button type="button" data-view="events">Events</button>
-          <button type="button" data-view="blogs">Blogs</button>
-        </nav>
-        <div class="cms-sidebar-footer">
-          <button id="logout-button" type="button" class="secondary hidden">Uitloggen</button>
-        </div>
-      </aside>
+    <a class="skip-link" href="#main-content">Naar de inhoud</a>
 
-      <main class="cms-main">
-        <section id="login-panel" class="panel panel-login">
+    <div class="app-shell">
+      <header class="topbar">
+        <button class="brand-button" id="brand-button" type="button" aria-label="Naar het beheeroverzicht">
+          <span class="brand-mark">BEGR!P</span>
+          <span class="brand-label">Websitebeheer</span>
+        </button>
+
+        <nav class="main-nav hidden" id="main-nav" aria-label="Beheeronderdelen">
+          <button type="button" data-route="overview">Overzicht</button>
+          <button type="button" data-route="home">Homepagina</button>
+          <button type="button" data-route="events">Evenementen</button>
+          <button type="button" data-route="blogs">Blogs</button>
+        </nav>
+
+        <div class="topbar-actions hidden" id="topbar-actions">
+          <a class="button button-quiet" href="/" target="_blank" rel="noopener">Bekijk website</a>
+          <button class="button button-quiet" id="logout-button" type="button">Uitloggen</button>
+        </div>
+      </header>
+
+      <main id="main-content" tabindex="-1">
+        <section class="login-view" id="login-view" aria-labelledby="login-title">
+          <div class="login-intro">
+            <p class="kicker">BEGR!P Assen</p>
+            <h1>De website bijwerken, zonder gedoe.</h1>
+            <p>Kies wat je wilt aanpassen, vul gewone velden in en publiceer wanneer alles goed staat.</p>
+            <ul class="login-benefits">
+              <li>Geen technische bestanden of codes</li>
+              <li>Eerst bekijken, daarna publiceren</li>
+              <li>Je werk wordt lokaal veilig bewaard</li>
+            </ul>
+          </div>
+
           <div class="login-card">
-            <p class="eyebrow">BEGR!P Beheer</p>
-            <h2>Log in om verder te gaan</h2>
-            <p>Gebruik het teamwachtwoord om de website te beheren.</p>
-            <form id="login-form">
-              <label>
-                Wachtwoord
-                <input id="password-input" type="password" name="password" autocomplete="current-password" required />
-              </label>
-              <button type="submit">Inloggen</button>
+            <p class="kicker">Beveiligde omgeving</p>
+            <h2 id="login-title">Log in met het teamwachtwoord</h2>
+            <p>Gebruik hetzelfde wachtwoord als altijd.</p>
+            <form id="login-form" novalidate>
+              <div class="field">
+                <label for="password-input">Wachtwoord</label>
+                <input id="password-input" name="password" type="password" autocomplete="current-password" required />
+              </div>
+              <button class="button button-primary button-wide" type="submit">Inloggen</button>
+              <p class="form-feedback" id="login-error" role="alert"></p>
             </form>
-            <p id="login-error" class="form-error"></p>
           </div>
         </section>
 
-        <section id="dashboard-panel" class="panel hidden">
-          <header class="panel-header">
-            <div>
-              <p class="eyebrow" id="view-eyebrow">Homepagina</p>
-              <h2 id="view-title">Homepagina bijwerken</h2>
+        <section class="workspace hidden" id="workspace">
+          <div class="announcement" id="announcement" aria-live="polite" aria-atomic="true"></div>
+
+          <section class="view overview-view" id="overview-view" aria-labelledby="overview-title">
+            <div class="page-heading">
+              <div>
+                <p class="kicker">Welkom terug</p>
+                <h1 id="overview-title">Wat wil je bijwerken?</h1>
+                <p>Kies een onderdeel. Je kunt altijd eerst een voorbeeld bekijken.</p>
+              </div>
             </div>
-            <button id="new-item-button" type="button">Nieuw item</button>
-          </header>
 
-          <div class="dashboard-grid" id="dashboard-grid">
-            <section class="panel-card list-card" id="list-card">
-              <div class="list-toolbar">
-                <h3 id="list-title">Bestaande items</h3>
-                <button id="refresh-button" type="button" class="secondary">Vernieuwen</button>
-              </div>
-              <div id="content-list" class="content-list"></div>
-            </section>
-
-            <section class="panel-card editor-card">
-              <div id="editor-empty" class="editor-empty-state">
-                <p class="eyebrow" id="editor-empty-eyebrow">Nog niets geopend</p>
-                <h3 id="editor-empty-title">Kies eerst een item</h3>
-                <p id="editor-empty-copy">Selecteer links een bestaand item om te bewerken, of maak een nieuw item aan om de editor te openen.</p>
-              </div>
-              <form id="editor-form" class="editor-form">
-                <div id="editor-meta" class="hidden"></div>
-                <div id="editor-fields" class="editor-fields"></div>
-                <div class="editor-actions">
-                  <button type="submit">Opslaan</button>
-                  <button id="delete-button" type="button" class="secondary hidden">Verwijderen</button>
+            <div class="dashboard-grid">
+              <article class="dashboard-card dashboard-card-featured">
+                <span class="card-number" aria-hidden="true">01</span>
+                <div>
+                  <h2>Homepagina</h2>
+                  <p>Pas de introductie, Over ons, nieuwsbrief, steunoproep en contactgegevens aan.</p>
                 </div>
-                <p id="editor-message" class="form-message"></p>
-              </form>
-            </section>
-          </div>
+                <button class="button button-primary" type="button" data-open-type="home">Homepagina bewerken</button>
+              </article>
+              <article class="dashboard-card">
+                <span class="card-number" aria-hidden="true">02</span>
+                <div>
+                  <h2>Evenementen</h2>
+                  <p>Maak een activiteit, voeg praktische informatie toe en regel de aanmeldknop.</p>
+                </div>
+                <button class="button button-secondary" type="button" data-open-type="events">Evenementen beheren</button>
+              </article>
+              <article class="dashboard-card">
+                <span class="card-number" aria-hidden="true">03</span>
+                <div>
+                  <h2>Blogs</h2>
+                  <p>Schrijf nieuws en verhalen met een rustige teksteditor en afbeeldingen.</p>
+                </div>
+                <button class="button button-secondary" type="button" data-open-type="blogs">Blogs beheren</button>
+              </article>
+            </div>
+
+            <aside class="help-strip">
+              <div>
+                <strong>Twijfel je?</strong>
+                <span>Sla een bericht op als concept. Dan is het nog niet zichtbaar op de website.</span>
+              </div>
+              <a href="/" target="_blank" rel="noopener">Open de huidige website</a>
+            </aside>
+          </section>
+
+          <section class="view list-view hidden" id="list-view" aria-labelledby="list-view-title">
+            <div class="page-heading page-heading-actions">
+              <div>
+                <button class="text-button back-to-overview" type="button">← Terug naar overzicht</button>
+                <p class="kicker" id="list-kicker">Inhoud</p>
+                <h1 id="list-view-title">Inhoud beheren</h1>
+                <p id="list-description"></p>
+              </div>
+              <button class="button button-primary" id="new-item-button" type="button">Nieuw item</button>
+            </div>
+
+            <div class="list-controls">
+              <div class="search-field">
+                <label for="search-input">Zoeken</label>
+                <input id="search-input" type="search" placeholder="Zoek op titel of samenvatting" />
+              </div>
+              <div class="filter-field">
+                <label for="status-filter">Toon</label>
+                <select id="status-filter">
+                  <option value="all">Alles</option>
+                  <option value="published">Gepubliceerd</option>
+                  <option value="draft">Concepten</option>
+                </select>
+              </div>
+              <button class="button button-quiet refresh-button" id="refresh-button" type="button">Vernieuwen</button>
+            </div>
+
+            <div class="content-list" id="content-list" aria-live="polite"></div>
+            <button class="button button-secondary load-more hidden" id="load-more-button" type="button">Meer laden</button>
+          </section>
+
+          <section class="view editor-view hidden" id="editor-view" aria-labelledby="editor-title">
+            <div class="editor-heading">
+              <div>
+                <button class="text-button" id="editor-back-button" type="button">← Terug</button>
+                <p class="kicker" id="editor-kicker">Bewerken</p>
+                <h1 id="editor-title">Inhoud bewerken</h1>
+                <p id="editor-description"></p>
+              </div>
+              <span class="status-pill" id="content-status"></span>
+            </div>
+
+            <aside class="recovery-banner hidden" id="recovery-banner">
+              <div>
+                <strong>Niet-opgeslagen werk gevonden</strong>
+                <p>Op dit apparaat staat een nieuwere lokale versie.</p>
+              </div>
+              <div class="button-row">
+                <button class="button button-secondary" id="restore-draft-button" type="button">Lokale versie herstellen</button>
+                <button class="button button-quiet" id="discard-draft-button" type="button">Verwijderen</button>
+              </div>
+            </aside>
+
+            <form id="editor-form" class="editor-form" novalidate>
+              <nav class="section-tabs hidden" id="home-section-tabs" aria-label="Onderdelen van de homepagina"></nav>
+              <div class="validation-summary hidden" id="validation-summary" role="alert" tabindex="-1">
+                <strong>Controleer de gemarkeerde velden.</strong>
+                <ul></ul>
+              </div>
+              <div class="form-sections" id="editor-fields"></div>
+
+              <div class="editor-action-bar">
+                <div class="save-state" id="save-state" aria-live="polite">Nog geen wijzigingen</div>
+                <div class="editor-actions">
+                  <button class="button button-danger button-left hidden" id="delete-button" type="button">Verwijderen</button>
+                  <button class="button button-quiet" id="preview-button" type="button">Voorbeeld bekijken</button>
+                  <button class="button button-secondary hidden" id="save-draft-button" type="button">Als concept opslaan</button>
+                  <button class="button button-primary" id="publish-button" type="submit">Publiceren</button>
+                </div>
+              </div>
+            </form>
+          </section>
         </section>
       </main>
     </div>
 
-    <template id="list-item-template">
-      <article class="content-list-item">
-        <div>
-          <p class="list-item-eyebrow"></p>
-          <h4></h4>
-          <p class="list-item-summary"></p>
-        </div>
-        <button type="button" class="secondary list-item-action">Bewerken</button>
-      </article>
-    </template>
+    <dialog class="dialog preview-dialog" id="preview-dialog" aria-labelledby="preview-title">
+      <div class="dialog-shell preview-shell">
+        <header class="dialog-header">
+          <div>
+            <p class="kicker">Voorbeeld</p>
+            <h2 id="preview-title">Zo komt de inhoud over</h2>
+          </div>
+          <button class="icon-button" type="button" data-close-dialog="preview-dialog" aria-label="Voorbeeld sluiten">×</button>
+        </header>
+        <article class="content-preview">
+          <div class="preview-image hidden" id="preview-image-wrap"><img id="preview-image" alt="" /></div>
+          <p class="preview-meta" id="preview-meta"></p>
+          <h1 id="preview-content-title"></h1>
+          <p class="preview-summary" id="preview-summary"></p>
+          <div class="preview-body" id="preview-body"></div>
+          <div class="home-preview hidden" id="home-preview"></div>
+        </article>
+        <footer class="dialog-footer">
+          <button class="button button-primary" type="button" data-close-dialog="preview-dialog">Sluiten</button>
+        </footer>
+      </div>
+    </dialog>
 
-    <script src="/admin/vendor/toastui-editor-all.min.js"></script>
-    <script src="/admin/app.js" defer></script>
+    <dialog class="dialog confirm-dialog" id="confirm-dialog" aria-labelledby="confirm-title">
+      <div class="dialog-shell">
+        <div class="dialog-symbol" aria-hidden="true">!</div>
+        <h2 id="confirm-title">Weet je het zeker?</h2>
+        <p id="confirm-message"></p>
+        <div class="dialog-footer">
+          <button class="button button-quiet" id="confirm-cancel" type="button">Annuleren</button>
+          <button class="button button-danger" id="confirm-accept" type="button">Doorgaan</button>
+        </div>
+      </div>
+    </dialog>
+
+    <script type="module" src="/admin/app.js"></script>
   </body>
 </html>

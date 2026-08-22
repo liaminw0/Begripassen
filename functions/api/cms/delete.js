@@ -1,51 +1,41 @@
-import { deleteRepoFile, error, getCmsConfig, getRepoFile, getTypeDefinition, json, requireAuth } from "./_lib";
+import { PublicError, handleError, json, readJson, requireSession } from "./_core.js";
+import { assertContentPath, getTypeDefinition } from "./_content.js";
+import {
+  commitRepoChanges,
+  getRepoFile,
+  getRepositoryConfig,
+  listRepoFilesRecursive,
+} from "./_github.js";
 
 export async function onRequestPost(context) {
-  const unauthorized = await requireAuth(context);
-  if (unauthorized) {
-    return unauthorized;
-  }
-
-  let payload;
   try {
-    payload = await context.request.json();
-  } catch {
-    return error("Invalid JSON body");
-  }
+    await requireSession(context, { mutation: true });
+    const payload = await readJson(context.request, 16 * 1024);
+    const type = String(payload.type || "");
+    if (!getTypeDefinition(type)) throw new PublicError("Onbekend inhoudstype.", 400, "unknown_type");
+    if (type === "home") throw new PublicError("De homepagina kan niet worden verwijderd.", 400, "delete_forbidden");
 
-  const type = payload.type;
-  const path = payload.path;
-  const definition = getTypeDefinition(type);
-
-  if (!definition || !path) {
-    return error("type and path are required");
-  }
-
-  if (type === "home") {
-    return error("Homepage content cannot be deleted");
-  }
-
-  let config;
-  try {
-    config = getCmsConfig(context.env);
-  } catch (err) {
-    return error(err.message, 500);
-  }
-
-  try {
-    let sha = payload.sha || "";
-    if (!sha) {
-      const existing = await getRepoFile(config, path);
-      sha = existing.sha;
+    const path = assertContentPath(type, String(payload.path || ""));
+    const config = getRepositoryConfig(context.env);
+    const existing = await getRepoFile(config, path, { optional: true });
+    if (!existing) throw new PublicError("Deze inhoud bestaat niet meer.", 404, "not_found");
+    if (!payload.sha || payload.sha !== existing.sha) {
+      throw new PublicError(
+        "Deze inhoud is ondertussen gewijzigd. Vernieuw het overzicht en probeer opnieuw.",
+        409,
+        "revision_conflict"
+      );
     }
 
-    await deleteRepoFile(config, path, `Delete ${type.slice(0, -1)}: ${path.split("/").pop()}`, sha);
-
-    return json({
-      ok: true,
-      path,
+    const deletes = path.endsWith("/index.md")
+      ? await listRepoFilesRecursive(config, path.replace(/\/index\.md$/, ""))
+      : [path];
+    await commitRepoChanges(config, {
+      deletes,
+      message: `Verwijder ${type === "events" ? "evenement" : "blog"}`,
     });
+    return json({ ok: true, path });
   } catch (err) {
-    return error(err.message, 500);
+    return handleError(err);
   }
 }

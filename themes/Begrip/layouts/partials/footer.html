@@ -2,6 +2,7 @@
   <div class="section footer-shell">
     {{ $currentPath := .RelPermalink }}
     {{ $isBaseURL := eq $currentPath "/" }}
+    {{ $contact := .Site.Home.Params }}
 
     <div class="footer-brand">
       <a class="footer-logo" href="{{ "/" | relURL }}">
@@ -20,13 +21,13 @@
     </div>
 
     <div class="footer-connect">
-      {{ with .Params.contact_instagram_url }}
-      <a href="{{ . }}" aria-label="Instagram"><i class="fa-brands fa-instagram"></i><span>{{ $.Params.contact_instagram_handle | default "@begripassen" }}</span></a>
+      {{ with $contact.contact_instagram_url }}
+      <a href="{{ . }}" aria-label="Instagram"><i class="fa-brands fa-instagram"></i><span>{{ $contact.contact_instagram_handle | default "@begripassen" }}</span></a>
       {{ end }}
-      {{ with .Params.contact_email }}
+      {{ with $contact.contact_email }}
       <a href="mailto:{{ . }}" aria-label="E-mail"><i class="fa-solid fa-envelope"></i><span>{{ . }}</span></a>
       {{ end }}
-      {{ with .Params.contact_phone }}
+      {{ with $contact.contact_phone }}
       <a href="tel:{{ . }}" aria-label="Telefoon"><i class="fa-solid fa-phone"></i><span>{{ . }}</span></a>
       {{ end }}
     </div>

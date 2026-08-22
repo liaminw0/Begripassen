@@ -32,7 +32,7 @@
         </div>
         {{ if $heroImage }}
         <div class="single-hero-image">
-          <img src="{{ $heroImage }}" alt="{{ .Title }}">
+          <img src="{{ $heroImage }}" alt="{{ .Params.image_alt | default .Title }}">
         </div>
         {{ end }}
       </header>
@@ -51,7 +51,7 @@
         </div>
         {{ if and (eq .Section "blogs") $heroImage }}
         <div class="single-hero-image">
-          <img src="{{ $heroImage }}" alt="{{ .Title }}">
+          <img src="{{ $heroImage }}" alt="{{ .Params.image_alt | default .Title }}">
         </div>
         {{ end }}
       </header>
@@ -64,7 +64,7 @@
       <div class="single-actions">
         {{ if eq .Section "events" }}
         {{ if and .Params.show_signup .Params.signup_link }}
-        <a href="{{ .Params.signup_link | safeURL }}" target="_blank" rel="noopener noreferrer">Aanmelden</a>
+        <a href="{{ .Params.signup_link }}" target="_blank" rel="noopener noreferrer">Aanmelden</a>
         {{ end }}
         <a href="{{ "/events/" | relURL }}" class="single-back-link">Terug naar events</a>
         {{ else if eq .Section "blogs" }}

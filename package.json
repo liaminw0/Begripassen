@@ -1,0 +1,11 @@
+{
+  "name": "begripassen-cms",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node tests/cms-content.test.js",
+    "test:browser": "node tests/browser-smoke.mjs",
+    "check": "node --check static/admin/app.js && node --check static/admin/cms-client.js && node --check static/admin/content-model.js && node --check static/admin/editor-tools.js && node --check functions/api/cms/_core.js && node --check functions/api/cms/_content.js && node --check functions/api/cms/_github.js",
+    "build": "hugo --minify"
+  }
+}
