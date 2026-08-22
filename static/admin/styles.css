@@ -482,8 +482,12 @@ main {
 }
 
 .dashboard-card .button {
+  grid-column: 2;
+  width: 100%;
   align-self: flex-start;
   margin-top: auto;
+  white-space: normal;
+  text-align: center;
 }
 
 .dashboard-card-featured .button-primary {
@@ -1425,6 +1429,10 @@ select:focus {
 
   .dashboard-card {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-card .button {
+    grid-column: 1;
   }
 
   .card-number {
