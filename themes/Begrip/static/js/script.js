@@ -29,13 +29,16 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
   anchor.addEventListener('click', function (e) {
       e.preventDefault();
 
-      const target = document.querySelector(this.getAttribute('href'));
+      const targetId = this.getAttribute('href');
+      const target = document.querySelector(targetId);
 
       if (target) {
           const offset = 100; // Adjust the offset/margin as needed
-          const targetPosition = target.getBoundingClientRect().top + window.scrollY;
+          const targetPosition = targetId === '#home'
+              ? 0
+              : target.getBoundingClientRect().top + window.scrollY - offset;
           window.scrollTo({
-              top: targetPosition - offset,
+              top: targetPosition,
               behavior: 'smooth'
           });
       }
