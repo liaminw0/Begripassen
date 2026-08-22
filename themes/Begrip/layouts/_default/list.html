@@ -1,19 +1,18 @@
 {{ define "main" }}
 <main>
   {{ if eq .Section "events" }}
-  {{ $upcoming := where .Pages "Date" "ge" now }}
-  {{ $past := where .Pages "Date" "lt" now }}
+  {{ $events := .Pages.ByDate }}
   <div id="events-page">
     <section class="section events-hero">
       <div class="events-hero-copy">
         <p class="events-kicker">BEGR!P Agenda</p>
         <h1>{{ .Title }}</h1>
         <p>Bekijk alle evenementen en activiteiten van BEGR!P op een plek.</p>
-        <a href="{{ "/" | relURL }}#heading-container" class="events-hero-link">Terug naar home</a>
+        <a href="{{ "/" | relURL }}#home" class="events-hero-link">Terug naar home</a>
       </div>
       <div class="events-hero-panel">
         <h2>Overzicht</h2>
-        <p>{{ len $upcoming }} aankomend · {{ len $past }} voorbij</p>
+        <p data-events-overview>Events worden ingedeeld…</p>
       </div>
     </section>
 
@@ -21,12 +20,11 @@
       <div class="events-group">
         <div class="events-group-head">
           <h2>Aankomende Events</h2>
-          <p>{{ len $upcoming }}</p>
+          <p data-events-count>0</p>
         </div>
-        {{ if gt (len $upcoming) 0 }}
-        <ul class="listpage-items events-grid{{ if eq (len $upcoming) 1 }} events-grid-single{{ end }}">
-        {{ range $upcoming.ByDate }}
-          <li class="event-item">
+        <ul id="upcoming-events" class="listpage-items events-grid">
+        {{ range $events }}
+          <li class="event-item" data-event-date="{{ .Date.Format "2006-01-02T15:04:05.999999999Z07:00" }}">
             <a class="event-link" href="{{ .RelPermalink }}">
               <div class="event-date">
                 <span class="event-date-day">{{ .Date.Format "02" }}</span>
@@ -47,43 +45,16 @@
           </li>
         {{ end }}
         </ul>
-        {{ else }}
-        <p class="events-empty">Er zijn nu geen aankomende events.</p>
-        {{ end }}
+        <p class="events-empty" data-events-empty>Er zijn nu geen aankomende events.</p>
       </div>
 
       <div class="events-group">
         <div class="events-group-head">
           <h2>Afgelopen Events</h2>
-          <p>{{ len $past }}</p>
+          <p data-events-count>0</p>
         </div>
-        {{ if gt (len $past) 0 }}
-        <ul class="listpage-items events-grid{{ if eq (len $past) 1 }} events-grid-single{{ end }}">
-        {{ range $past.ByDate.Reverse }}
-          <li class="event-item">
-            <a class="event-link" href="{{ .RelPermalink }}">
-              <div class="event-date">
-                <span class="event-date-day">{{ .Date.Format "02" }}</span>
-                <span class="event-date-month">{{ .Date.Format "Jan" }}</span>
-                <span class="event-date-year">{{ .Date.Format "2006" }}</span>
-              </div>
-              <div class="event-meta">
-                <h3>{{ .Title }}</h3>
-                <p class="event-full-date">{{ .Date.Format "2 January 2006" }}</p>
-                {{ with .Summary }}
-                <p class="event-summary">{{ . | plainify }}</p>
-                {{ else }}
-                <p class="event-summary">{{ .Plain | truncate 140 }}</p>
-                {{ end }}
-              </div>
-              <span class="event-cta">Bekijk</span>
-            </a>
-          </li>
-        {{ end }}
-        </ul>
-        {{ else }}
-        <p class="events-empty">Er zijn nog geen voorbije events om te tonen.</p>
-        {{ end }}
+        <ul id="past-events" class="listpage-items events-grid"></ul>
+        <p class="events-empty" data-events-empty>Er zijn nog geen voorbije events om te tonen.</p>
       </div>
     </section>
   </div>
@@ -94,7 +65,7 @@
         <p class="blogs-kicker">BEGR!P Nieuws</p>
         <h1>{{ .Title }}</h1>
         <p>Updates, verhalen en nieuws over wat er speelt bij BEGR!P.</p>
-        <a href="{{ "/" | relURL }}#blog-container" class="blogs-hero-link">Terug naar home</a>
+        <a href="{{ "/" | relURL }}#blog" class="blogs-hero-link">Terug naar home</a>
       </div>
       <div class="blogs-hero-panel">
         <h2>Overzicht</h2>

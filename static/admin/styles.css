@@ -124,7 +124,7 @@ button:disabled,
 
 .brand-button {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 0.7rem;
   padding: 0.45rem 0;
   border: 0;
@@ -134,9 +134,11 @@ button:disabled,
 }
 
 .brand-mark {
-  font-size: 1.2rem;
-  font-weight: 900;
-  letter-spacing: -0.04em;
+  display: block;
+  width: 5.8rem;
+  height: 2.2rem;
+  object-fit: contain;
+  filter: brightness(0) saturate(100%) invert(25%) sepia(20%) saturate(1400%) hue-rotate(75deg) brightness(88%) contrast(92%);
 }
 
 .brand-label {
@@ -145,13 +147,13 @@ button:disabled,
   font-weight: 700;
 }
 
-.main-nav {
+.admin-navigation {
   display: flex;
   justify-content: center;
   gap: 0.25rem;
 }
 
-.main-nav button {
+.admin-navigation button {
   padding: 0.65rem 0.8rem;
   border: 0;
   border-radius: 9px;
@@ -161,12 +163,12 @@ button:disabled,
   cursor: pointer;
 }
 
-.main-nav button:hover {
+.admin-navigation button:hover {
   color: var(--ink);
   background: var(--surface-soft);
 }
 
-.main-nav button.is-active {
+.admin-navigation button.is-active {
   color: var(--green-dark);
   background: var(--green-soft);
 }
@@ -245,7 +247,7 @@ button:disabled,
   width: 100%;
 }
 
-.button-left {
+.editor-delete-button {
   margin-right: auto;
 }
 
@@ -282,14 +284,14 @@ main {
 
 .login-view {
   display: grid;
-  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
-  gap: clamp(3rem, 8vw, 8rem);
+  grid-template-columns: minmax(360px, 520px);
+  justify-content: center;
+  gap: 0;
   align-items: center;
   min-height: calc(100vh - 76px);
   padding: 3rem 0;
 }
 
-.login-intro h1,
 .page-heading h1,
 .editor-heading h1 {
   max-width: 900px;
@@ -298,13 +300,6 @@ main {
   font-weight: 850;
   letter-spacing: -0.055em;
   line-height: 0.98;
-}
-
-.login-intro > p:not(.kicker) {
-  max-width: 650px;
-  margin: 1.5rem 0;
-  color: var(--muted);
-  font-size: 1.14rem;
 }
 
 .kicker {
@@ -316,34 +311,6 @@ main {
   text-transform: uppercase;
 }
 
-.login-benefits {
-  display: grid;
-  gap: 0.65rem;
-  margin: 2rem 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.login-benefits li {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-weight: 650;
-}
-
-.login-benefits li::before {
-  display: grid;
-  width: 1.5rem;
-  height: 1.5rem;
-  place-items: center;
-  border-radius: 50%;
-  color: var(--green-dark);
-  background: var(--green-soft);
-  content: "✓";
-  font-size: 0.8rem;
-  font-weight: 900;
-}
-
 .login-card {
   padding: clamp(1.5rem, 5vw, 2.5rem);
   border: 1px solid var(--line);
@@ -353,19 +320,26 @@ main {
 }
 
 .login-card h2 {
-  margin: 0;
+  margin: 0 0 1.25rem;
   font-size: 1.65rem;
   line-height: 1.15;
-}
-
-.login-card > p:not(.kicker) {
-  margin: 0.8rem 0 1.7rem;
-  color: var(--muted);
 }
 
 .login-card form {
   display: grid;
   gap: 1rem;
+}
+
+.login-help {
+  margin: 1.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.login-help a {
+  color: var(--green-dark);
+  font-weight: 750;
 }
 
 .form-feedback {
@@ -450,7 +424,7 @@ main {
   box-shadow: var(--shadow-sm);
 }
 
-.dashboard-card-featured {
+.dashboard-card-homepage {
   grid-row: span 2;
   min-height: 536px;
   color: #fff;
@@ -477,7 +451,7 @@ main {
   color: var(--muted);
 }
 
-.dashboard-card-featured p {
+.dashboard-card-homepage p {
   color: rgba(255, 255, 255, 0.8);
 }
 
@@ -490,13 +464,13 @@ main {
   text-align: center;
 }
 
-.dashboard-card-featured .button-primary {
+.dashboard-card-homepage .button-primary {
   border-color: #fff;
   color: var(--green-dark);
   background: #fff;
 }
 
-.card-number {
+.dashboard-card-number {
   color: var(--orange);
   font-size: 0.8rem;
   font-weight: 850;
@@ -697,7 +671,7 @@ select:focus {
   background: var(--danger-soft);
 }
 
-.load-more {
+.load-more-button {
   margin: 1.25rem auto 0;
 }
 
@@ -744,7 +718,7 @@ select:focus {
   gap: 1rem;
 }
 
-.section-tabs {
+.editor-section-tabs {
   position: sticky;
   z-index: 20;
   top: 85px;
@@ -759,7 +733,7 @@ select:focus {
   scrollbar-width: thin;
 }
 
-.section-tabs button {
+.editor-section-tabs button {
   flex: none;
   padding: 0.65rem 0.8rem;
   border: 0;
@@ -770,7 +744,7 @@ select:focus {
   cursor: pointer;
 }
 
-.section-tabs button.is-active {
+.editor-section-tabs button.is-active {
   color: #fff;
   background: var(--green);
 }
@@ -1121,7 +1095,7 @@ select:focus {
   to { transform: rotate(360deg); }
 }
 
-.dialog {
+.modal-dialog {
   width: min(calc(100% - 2rem), 640px);
   max-height: calc(100vh - 2rem);
   padding: 0;
@@ -1133,36 +1107,36 @@ select:focus {
   box-shadow: var(--shadow-lg);
 }
 
-.dialog::backdrop {
+.modal-dialog::backdrop {
   background: rgba(14, 24, 17, 0.62);
   backdrop-filter: blur(3px);
 }
 
-.dialog-shell {
+.modal-shell {
   padding: clamp(1.25rem, 4vw, 2rem);
 }
 
-.dialog-header {
+.modal-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 1rem;
 }
 
-.dialog h2 {
+.modal-dialog h2 {
   margin: 0;
   font-size: 1.55rem;
   line-height: 1.15;
 }
 
-.dialog-footer {
+.modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 0.65rem;
   margin-top: 1.5rem;
 }
 
-.dialog-symbol {
+.modal-symbol {
   display: grid;
   width: 2.5rem;
   height: 2.5rem;
@@ -1189,7 +1163,7 @@ select:focus {
   cursor: pointer;
 }
 
-.preview-dialog {
+.content-preview-dialog {
   width: min(calc(100% - 2rem), 920px);
 }
 
@@ -1275,7 +1249,7 @@ select:focus {
     gap: 0.75rem;
   }
 
-  .main-nav {
+  .admin-navigation {
     grid-column: 1 / -1;
     grid-row: 2;
     justify-content: flex-start;
@@ -1306,7 +1280,7 @@ select:focus {
     gap: 1.5rem;
   }
 
-  .section-tabs {
+  .editor-section-tabs {
     top: 132px;
   }
 }
@@ -1316,7 +1290,7 @@ select:focus {
     grid-template-columns: 1fr;
   }
 
-  .dashboard-card-featured {
+  .dashboard-card-homepage {
     grid-row: auto;
     min-height: 340px;
   }
@@ -1333,12 +1307,12 @@ select:focus {
     display: none;
   }
 
-  .main-nav {
+  .admin-navigation {
     width: calc(100vw - 2rem);
     padding-bottom: 0.25rem;
   }
 
-  .section-tabs {
+  .editor-section-tabs {
     top: 0.5rem;
   }
 
@@ -1406,7 +1380,7 @@ select:focus {
     text-align: left;
   }
 
-  .dialog-footer {
+  .modal-footer {
     flex-wrap: wrap;
   }
 }
@@ -1417,11 +1391,10 @@ select:focus {
     width: min(calc(100% - 1.25rem), var(--content-width));
   }
 
-  .main-nav button {
+  .admin-navigation button {
     padding-inline: 0.65rem;
   }
 
-  .login-intro h1,
   .page-heading h1,
   .editor-heading h1 {
     font-size: 2.35rem;
@@ -1435,7 +1408,7 @@ select:focus {
     grid-column: 1;
   }
 
-  .card-number {
+  .dashboard-card-number {
     margin-bottom: -0.75rem;
   }
 

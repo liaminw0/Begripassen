@@ -1,6 +1,6 @@
-const menuBtn = document.querySelector('.burger');
-const navBar = document.querySelector('.navbar');
-const menuItem = document.querySelectorAll('.menu-item');
+const menuBtn = document.querySelector('.mobile-menu-toggle');
+const navBar = document.querySelector('.site-header-nav');
+const menuItem = document.querySelectorAll('.site-nav-item');
 
 function toggleMenu() {
   if (!menuBtn || !navBar) {
@@ -43,7 +43,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 document.addEventListener("DOMContentLoaded", function() {
-  const heroVideo = document.querySelector("#heading-container .hero-video");
+  const heroVideo = document.querySelector("#home-hero .hero-video");
   if (heroVideo) {
     heroVideo.addEventListener("loadedmetadata", function() {
       if (Number.isFinite(heroVideo.duration) && heroVideo.duration > 0) {
@@ -53,9 +53,9 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   const heroIntroTargets = document.querySelectorAll([
-    "#heading-container .container-left img",
-    "#heading-container .container-left p",
-    "#heading-container #event-container"
+    "#home-hero .content-column-left img",
+    "#home-hero .content-column-left p",
+    "#home-hero #event-calendar"
   ].join(", "));
 
   heroIntroTargets.forEach(function(el) {
@@ -90,19 +90,19 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   const revealSelectors = [
-    "#heading-container .container-left",
-    "#heading-container .container-right",
-    "#about-container .container-left",
-    "#about-container .container-right",
-    "#blog-container .container-left",
-    "#blog-container .container-right",
-    "#nieuwsbrief-container .section",
-    "#contact-container .contact-intro",
-    "#contact-container .contact-links",
-    "#steunons-container .support-overview",
-    "#steunons-container .support-payment-placeholder",
-    "#single-page .article-info",
-    "#single-page article"
+    "#home-hero .content-column-left",
+    "#home-hero .content-column-right",
+    "#about-section .content-column-left",
+    "#about-section .content-column-right",
+    "#blog-section .content-column-left",
+    "#blog-section .content-column-right",
+    "#newsletter-section .section",
+    "#contact-section .contact-intro",
+    "#contact-section .contact-links",
+    "#support-section .support-overview",
+    "#support-section .support-payment-placeholder",
+    "#article-page .article-info",
+    "#article-page article"
   ];
 
   if (!isEventsListPage) {
@@ -172,6 +172,46 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 
 
+// Events are classified in the browser so a deployed page stays current
+// between Hugo builds. The date is an ISO value rendered from the existing
+// front matter `date` field; Date.parse preserves its explicit timezone.
+document.addEventListener("DOMContentLoaded", function() {
+  const eventsPage = document.getElementById("events-page");
+  if (!eventsPage) return;
+
+  const upcomingList = document.getElementById("upcoming-events");
+  const pastList = document.getElementById("past-events");
+  const overview = eventsPage.querySelector("[data-events-overview]");
+  const groups = eventsPage.querySelectorAll(".events-group");
+  const upcomingCount = groups[0]?.querySelector("[data-events-count]");
+  const pastCount = groups[1]?.querySelector("[data-events-count]");
+  const upcomingEmpty = groups[0]?.querySelector("[data-events-empty]");
+  const pastEmpty = groups[1]?.querySelector("[data-events-empty]");
+  const eventItems = [...upcomingList.querySelectorAll("[data-event-date]")];
+  const now = Date.now();
+  const upcoming = [];
+  const past = [];
+
+  eventItems.forEach((item) => {
+    const timestamp = Date.parse(item.dataset.eventDate);
+    if (Number.isNaN(timestamp) || timestamp >= now) upcoming.push({ item, timestamp });
+    else past.push({ item, timestamp });
+  });
+
+  upcoming.sort((a, b) => a.timestamp - b.timestamp);
+  past.sort((a, b) => b.timestamp - a.timestamp);
+  upcoming.forEach(({ item }) => upcomingList.append(item));
+  past.forEach(({ item }) => pastList.append(item));
+
+  upcomingList.classList.toggle("events-grid-single", upcoming.length === 1);
+  pastList.classList.toggle("events-grid-single", past.length === 1);
+  upcomingCount.textContent = upcoming.length;
+  pastCount.textContent = past.length;
+  upcomingEmpty.style.display = upcoming.length ? "none" : "block";
+  pastEmpty.style.display = past.length ? "none" : "block";
+  overview.textContent = `${upcoming.length} aankomend · ${past.length} voorbij`;
+});
+
 //month
 document.addEventListener("DOMContentLoaded", function() {
   const englishMonthNames = [
@@ -184,13 +224,13 @@ document.addEventListener("DOMContentLoaded", function() {
       "Juli", "Augustus", "September", "Oktober", "November", "December"
   ];
   
-  const monthDisplay = document.getElementById('currentMonth');
-  const prevButton = document.getElementById('prevMonth');
-  const nextButton = document.getElementById('nextMonth');
-  const noEventsMessage = document.getElementById('noEventsMessage');
-  const eventsList = document.querySelectorAll('.events-list a');
+  const monthDisplay = document.getElementById('event-calendar-month');
+  const prevButton = document.getElementById('event-calendar-previous');
+  const nextButton = document.getElementById('event-calendar-next');
+  const eventCalendarEmpty = document.getElementById('event-calendar-empty');
+  const eventsList = document.querySelectorAll('.event-calendar-items a');
 
-  if (!monthDisplay || !prevButton || !nextButton || !noEventsMessage) {
+  if (!monthDisplay || !prevButton || !nextButton || !eventCalendarEmpty) {
     return;
   }
   
@@ -216,9 +256,9 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     if (!eventsFound) {
-        noEventsMessage.style.display = "block";
+        eventCalendarEmpty.style.display = "block";
     } else {
-        noEventsMessage.style.display = "none";
+        eventCalendarEmpty.style.display = "none";
     }
 }
   

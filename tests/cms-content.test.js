@@ -10,6 +10,7 @@ import {
   assertContentPath,
   buildContentPath,
   normalizeFields,
+  normalizeEventDate,
   parseMarkdownFile,
   serializeMarkdownFile,
   serializeTomlMarkdownFile,
@@ -61,6 +62,12 @@ test("nieuwe paden zijn stabiele Hugo-bundels met datum en slug", () => {
     buildContentPath("events", { title: "Borrel", date: "2026-09-01T20:00" }, "content/events/bestaand/index.md"),
     "content/events/bestaand/index.md"
   );
+});
+
+test("evenementstijden worden als Nederlandse lokale tijd met zomer- en wintertijd opgeslagen", () => {
+  assert.equal(normalizeEventDate("2026-01-15T19:30"), "2026-01-15T19:30:00.000+01:00");
+  assert.equal(normalizeEventDate("2026-07-15T19:30"), "2026-07-15T19:30:00.000+02:00");
+  assert.equal(normalizeFields("events", { date: "2026-09-01T20:00" }).date, "2026-09-01T20:00:00.000+02:00");
 });
 
 test("servervalidatie blokkeert onveilige links, HTML en ongeldige content", () => {
@@ -322,5 +329,5 @@ test("frontendmodellen beginnen veilig als concept en geven gewone veldfouten", 
   assert.ok(errors.title);
   assert.ok(errors.body);
   const normalized = normalizeFields("events", { ...event.fields, title: "Test", date: "2026-09-01T20:00" });
-  assert.equal(normalized.date, "2026-09-01T20:00:00.000Z");
+  assert.equal(normalized.date, "2026-09-01T20:00:00.000+02:00");
 });

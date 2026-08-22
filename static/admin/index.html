@@ -14,11 +14,11 @@
     <div class="app-shell">
       <header class="topbar">
         <button class="brand-button" id="brand-button" type="button" aria-label="Naar het beheeroverzicht">
-          <span class="brand-mark">BEGR!P</span>
+          <img class="brand-mark" src="/images/logo.svg" alt="BEGR!P" />
           <span class="brand-label">Websitebeheer</span>
         </button>
 
-        <nav class="main-nav hidden" id="main-nav" aria-label="Beheeronderdelen">
+        <nav class="admin-navigation hidden" id="admin-navigation" aria-label="Beheeronderdelen">
           <button type="button" data-route="overview">Overzicht</button>
           <button type="button" data-route="home">Homepagina</button>
           <button type="button" data-route="events">Evenementen</button>
@@ -33,21 +33,8 @@
 
       <main id="main-content" tabindex="-1">
         <section class="login-view" id="login-view" aria-labelledby="login-title">
-          <div class="login-intro">
-            <p class="kicker">BEGR!P Assen</p>
-            <h1>De website bijwerken, zonder gedoe.</h1>
-            <p>Kies wat je wilt aanpassen, vul gewone velden in en publiceer wanneer alles goed staat.</p>
-            <ul class="login-benefits">
-              <li>Geen technische bestanden of codes</li>
-              <li>Eerst bekijken, daarna publiceren</li>
-              <li>Je werk wordt lokaal veilig bewaard</li>
-            </ul>
-          </div>
-
           <div class="login-card">
-            <p class="kicker">Beveiligde omgeving</p>
             <h2 id="login-title">Log in met het teamwachtwoord</h2>
-            <p>Gebruik hetzelfde wachtwoord als altijd.</p>
             <form id="login-form" novalidate>
               <div class="field">
                 <label for="password-input">Wachtwoord</label>
@@ -56,6 +43,7 @@
               <button class="button button-primary button-wide" type="submit">Inloggen</button>
               <p class="form-feedback" id="login-error" role="alert"></p>
             </form>
+            <p class="login-help">Problemen met inloggen? <a href="mailto:ict@begripassen.nl">ict@begripassen.nl</a></p>
           </div>
         </section>
 
@@ -72,8 +60,8 @@
             </div>
 
             <div class="dashboard-grid">
-              <article class="dashboard-card dashboard-card-featured">
-                <span class="card-number" aria-hidden="true">01</span>
+              <article class="dashboard-card dashboard-card-homepage">
+                <span class="dashboard-card-number" aria-hidden="true">01</span>
                 <div>
                   <h2>Homepagina</h2>
                   <p>Pas de introductie, Over ons, nieuwsbrief, steunoproep en contactgegevens aan.</p>
@@ -81,7 +69,7 @@
                 <button class="button button-primary" type="button" data-open-type="home">Homepagina bewerken</button>
               </article>
               <article class="dashboard-card">
-                <span class="card-number" aria-hidden="true">02</span>
+                <span class="dashboard-card-number" aria-hidden="true">02</span>
                 <div>
                   <h2>Evenementen</h2>
                   <p>Maak een activiteit, voeg praktische informatie toe en regel de aanmeldknop.</p>
@@ -89,7 +77,7 @@
                 <button class="button button-secondary" type="button" data-open-type="events">Evenementen beheren</button>
               </article>
               <article class="dashboard-card">
-                <span class="card-number" aria-hidden="true">03</span>
+                <span class="dashboard-card-number" aria-hidden="true">03</span>
                 <div>
                   <h2>Blogs</h2>
                   <p>Schrijf nieuws en verhalen met een rustige teksteditor en afbeeldingen.</p>
@@ -135,7 +123,7 @@
             </div>
 
             <div class="content-list" id="content-list" aria-live="polite"></div>
-            <button class="button button-secondary load-more hidden" id="load-more-button" type="button">Meer laden</button>
+              <button class="button button-secondary load-more-button hidden" id="load-more-button" type="button">Meer laden</button>
           </section>
 
           <section class="view editor-view hidden" id="editor-view" aria-labelledby="editor-title">
@@ -161,7 +149,7 @@
             </aside>
 
             <form id="editor-form" class="editor-form" novalidate>
-              <nav class="section-tabs hidden" id="home-section-tabs" aria-label="Onderdelen van de homepagina"></nav>
+              <nav class="editor-section-tabs hidden" id="home-section-tabs" aria-label="Onderdelen van de homepagina"></nav>
               <div class="validation-summary hidden" id="validation-summary" role="alert" tabindex="-1">
                 <strong>Controleer de gemarkeerde velden.</strong>
                 <ul></ul>
@@ -171,7 +159,7 @@
               <div class="editor-action-bar">
                 <div class="save-state" id="save-state" aria-live="polite">Nog geen wijzigingen</div>
                 <div class="editor-actions">
-                  <button class="button button-danger button-left hidden" id="delete-button" type="button">Verwijderen</button>
+                  <button class="button button-danger editor-delete-button hidden" id="delete-button" type="button">Verwijderen</button>
                   <button class="button button-quiet" id="preview-button" type="button">Voorbeeld bekijken</button>
                   <button class="button button-secondary hidden" id="save-draft-button" type="button">Als concept opslaan</button>
                   <button class="button button-primary" id="publish-button" type="submit">Publiceren</button>
@@ -183,14 +171,14 @@
       </main>
     </div>
 
-    <dialog class="dialog preview-dialog" id="preview-dialog" aria-labelledby="preview-title">
-      <div class="dialog-shell preview-shell">
-        <header class="dialog-header">
+    <dialog class="modal-dialog content-preview-dialog" id="content-preview-dialog" aria-labelledby="preview-title">
+      <div class="modal-shell content-preview-shell">
+        <header class="modal-header">
           <div>
             <p class="kicker">Voorbeeld</p>
             <h2 id="preview-title">Zo komt de inhoud over</h2>
           </div>
-          <button class="icon-button" type="button" data-close-dialog="preview-dialog" aria-label="Voorbeeld sluiten">×</button>
+            <button class="icon-button" type="button" data-close-dialog="content-preview-dialog" aria-label="Voorbeeld sluiten">×</button>
         </header>
         <article class="content-preview">
           <div class="preview-image hidden" id="preview-image-wrap"><img id="preview-image" alt="" /></div>
@@ -200,18 +188,18 @@
           <div class="preview-body" id="preview-body"></div>
           <div class="home-preview hidden" id="home-preview"></div>
         </article>
-        <footer class="dialog-footer">
-          <button class="button button-primary" type="button" data-close-dialog="preview-dialog">Sluiten</button>
+        <footer class="modal-footer">
+          <button class="button button-primary" type="button" data-close-dialog="content-preview-dialog">Sluiten</button>
         </footer>
       </div>
     </dialog>
 
-    <dialog class="dialog confirm-dialog" id="confirm-dialog" aria-labelledby="confirm-title">
-      <div class="dialog-shell">
-        <div class="dialog-symbol" aria-hidden="true">!</div>
+    <dialog class="modal-dialog confirmation-dialog" id="confirmation-dialog" aria-labelledby="confirm-title">
+      <div class="modal-shell">
+        <div class="modal-symbol" aria-hidden="true">!</div>
         <h2 id="confirm-title">Weet je het zeker?</h2>
         <p id="confirm-message"></p>
-        <div class="dialog-footer">
+        <div class="modal-footer">
           <button class="button button-quiet" id="confirm-cancel" type="button">Annuleren</button>
           <button class="button button-danger" id="confirm-accept" type="button">Doorgaan</button>
         </div>

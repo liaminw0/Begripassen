@@ -59,7 +59,7 @@ const sampleItems = {
       newsletter: "Blijf op de hoogte van onze activiteiten.",
       support: "Jouw betrokkenheid maakt verschil.",
       support_primary_text: "Deel je idee",
-      support_primary_url: "#contact-container",
+      support_primary_url: "#contact-section",
       support_secondary_text: "",
       support_secondary_url: "",
       contact: "Neem gerust contact met ons op.",
@@ -298,12 +298,12 @@ try {
   await evaluate("document.querySelector('#restore-draft-button').click()");
   await waitFor("document.querySelector('[name=title]').value === 'Aangepaste zomeravond'", "de herstelde lokale versie");
   await evaluate("document.querySelector('#preview-button').click()");
-  await waitFor("document.querySelector('#preview-dialog').open", "het voorbeeld");
+  await waitFor("document.querySelector('#content-preview-dialog').open", "het voorbeeld");
   assert.equal(await evaluate("document.querySelector('#preview-content-title').textContent"), "Aangepaste zomeravond");
-  await evaluate("document.querySelector('[data-close-dialog=preview-dialog]').click()");
+  await evaluate("document.querySelector('[data-close-dialog=content-preview-dialog]').click()");
 
   await evaluate("document.querySelector('#editor-back-button').click()");
-  await waitFor("document.querySelector('#confirm-dialog').open", "de waarschuwing voor niet-opgeslagen werk");
+  await waitFor("document.querySelector('#confirmation-dialog').open", "de waarschuwing voor niet-opgeslagen werk");
   assert.match(await evaluate("document.querySelector('#confirm-message').textContent"), /lokale reservekopie/i);
   await evaluate("document.querySelector('#confirm-cancel').click()");
   assert.equal(await evaluate("document.querySelector('#editor-view').classList.contains('hidden')"), false);

@@ -1,4 +1,4 @@
-<div id="footer-container">
+<div id="site-footer">
   <div class="section footer-shell">
     {{ $currentPath := .RelPermalink }}
     {{ $isBaseURL := eq $currentPath "/" }}
@@ -12,12 +12,13 @@
     </div>
 
     <div class="footer-links">
-      <a href="{{ if not $isBaseURL }}{{ "/" | relURL }}{{ end }}#heading-container"><i class="fa-solid fa-house"></i><span>Home</span></a>
-      <a href="{{ if not $isBaseURL }}{{ "/" | relURL }}{{ end }}#about-container"><i class="fa-solid fa-circle-info"></i><span>Over Ons</span></a>
-      <a href="{{ if not $isBaseURL }}{{ "/" | relURL }}{{ end }}#blog-container"><i class="fa-solid fa-blog"></i><span>Blog</span></a>
-      <a href="{{ if not $isBaseURL }}{{ "/" | relURL }}{{ end }}#nieuwsbrief-container"><i class="fa-solid fa-envelope"></i><span>Nieuwsbrief</span></a>
-      <a href="{{ if not $isBaseURL }}{{ "/" | relURL }}{{ end }}#contact-container"><i class="fa-solid fa-at"></i><span>Contact</span></a>
-      <a href="{{ if not $isBaseURL }}{{ "/" | relURL }}{{ end }}#steunons-container"><i class="fa-solid fa-handshake-angle"></i><span>Steun Ons</span></a>
+      <a href="{{ if $isBaseURL }}#home{{ else }}{{ "/" | relURL }}#home{{ end }}"><i class="fa-solid fa-house"></i><span>Home</span></a>
+      <a href="{{ "/events/" | relURL }}"><i class="fa-solid fa-calendar-days"></i><span>Agenda</span></a>
+      <a href="{{ if $isBaseURL }}#over-ons{{ else }}{{ "/" | relURL }}#over-ons{{ end }}"><i class="fa-solid fa-circle-info"></i><span>Over Ons</span></a>
+      <a href="{{ "/blogs/" | relURL }}"><i class="fa-solid fa-blog"></i><span>Blog</span></a>
+      <a href="{{ if $isBaseURL }}#nieuwsbrief{{ else }}{{ "/" | relURL }}#nieuwsbrief{{ end }}"><i class="fa-solid fa-envelope"></i><span>NieuwsBrief</span></a>
+      <a href="{{ if $isBaseURL }}#steun-ons{{ else }}{{ "/" | relURL }}#steun-ons{{ end }}"><i class="fa-solid fa-handshake-angle"></i><span>Steun Ons!</span></a>
+      <a href="{{ if $isBaseURL }}#contact{{ else }}{{ "/" | relURL }}#contact{{ end }}"><i class="fa-solid fa-at"></i><span>Contact</span></a>
     </div>
 
     <div class="footer-connect">
@@ -32,6 +33,6 @@
       {{ end }}
     </div>
 
-    <p class="footer-copy">Copyright 2024 BEGR!P Assen</p>
+    <p class="footer-copy">Copyright 2026 BEGR!P Assen · Website door <a href="https://liamhelpt.nl" target="_blank" rel="noopener noreferrer">liamhelpt.nl</a></p>
   </div>
 </div>

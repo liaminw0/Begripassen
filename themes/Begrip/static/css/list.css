@@ -16,7 +16,7 @@ main {
 #blogs-page,
 #list-page {
   min-height: calc(100vh - 1px);
-  background-color: var(--list-bg-main);
+  background: transparent;
 }
 
 #blogs-page .reveal-up,
@@ -226,6 +226,7 @@ main {
 }
 
 .blogs-grid {
+  width: 100%;
   padding: 0;
   columns: unset;
   column-count: unset;

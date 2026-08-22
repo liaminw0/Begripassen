@@ -167,6 +167,15 @@ function localDate(offsetHours = 0) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
 }
 
+function amsterdamDateTime(date) {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Amsterdam",
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+  }).formatToParts(date).reduce((values, part) => ({ ...values, [part.type]: part.value }), {});
+  return `${parts.year}-${parts.month}-${parts.day}T${parts.hour}:${parts.minute}`;
+}
+
 export function createEmptyItem(type) {
   const fields = {};
   for (const field of fieldsForType(type)) {
@@ -177,8 +186,7 @@ export function createEmptyItem(type) {
   if (type === "events") {
     const date = new Date(Date.now() + 60 * 60 * 1000);
     date.setMinutes(0, 0, 0);
-    const pad = (value) => String(value).padStart(2, "0");
-    fields.date = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+    fields.date = amsterdamDateTime(date);
     fields.organiser = "BEGR!P";
     fields.draft = true;
   }

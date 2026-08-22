@@ -283,10 +283,10 @@ function restoreSelection(range, content) {
 
 function openInputDialog({ title, fields, acceptLabel }) {
   const dialog = document.createElement("dialog");
-  dialog.className = "dialog editor-input-dialog";
+  dialog.className = "modal-dialog editor-input-dialog";
   const form = document.createElement("form");
   form.method = "dialog";
-  form.className = "dialog-shell";
+  form.className = "modal-shell";
   const heading = document.createElement("h2");
   heading.textContent = title;
   form.append(heading);
@@ -312,7 +312,7 @@ function openInputDialog({ title, fields, acceptLabel }) {
   error.className = "form-feedback";
   error.setAttribute("role", "alert");
   const footer = document.createElement("div");
-  footer.className = "dialog-footer";
+  footer.className = "modal-footer";
   const cancel = document.createElement("button");
   cancel.type = "button";
   cancel.className = "button button-quiet";

@@ -1,6 +1,6 @@
 ---
 title: BEGR!P Borrel
-date: "2026-04-01T19:30:00.000Z"
+date: "2026-04-01T19:30:00.000+02:00"
 location: De Witte Bal
 organiser: BEGR!P, NachtBurgemeester
 image: media/1774867981810-img-20260330-wa0003.webp

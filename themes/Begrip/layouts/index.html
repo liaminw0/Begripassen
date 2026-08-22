@@ -1,25 +1,26 @@
 {{ define "main"}}
 <main>
-  <div id="heading-container">
+  <div id="home-hero">
+    <span id="home" class="section-anchor" aria-hidden="true"></span>
     <div class="hero-video-bg" aria-hidden="true">
       <video class="hero-video" autoplay muted loop playsinline preload="metadata">
         <source src="{{ "videos/heading.mp4" | relURL }}" type="video/mp4">
       </video>
     </div>
     <div class="section">
-        <div class="container-left">
+        <div class="content-column-left">
           <img src="{{ "images/logo.svg" | relURL }}" alt="">
           <p>{{ .Params.heading }}</p>
         </div>
-        <div class="container-right">
-          <div id="event-container">
-            <div class="event-menu">
-              <button id="prevMonth"><i class="fa-solid fa-arrow-left"></i></button>
-              <h1 id="currentMonth">maart</h1>
-              <button id="nextMonth"><i class="fa-solid fa-arrow-right"></i></button>
+        <div class="content-column-right">
+          <div id="event-calendar">
+            <div class="event-calendar-controls">
+              <button id="event-calendar-previous"><i class="fa-solid fa-arrow-left"></i></button>
+              <h1 id="event-calendar-month">maart</h1>
+              <button id="event-calendar-next"><i class="fa-solid fa-arrow-right"></i></button>
           </div>
-          <div class="event-list">
-            <ul class="events-list">
+          <div class="event-calendar-list">
+            <ul class="event-calendar-items">
               {{ range .Site.RegularPages.ByDate }}
                   {{ if eq .Section "events" }}
                   <a href="{{ .RelPermalink }}" date-month="{{ .Date.Format "January-2006" }}"><li>
@@ -29,19 +30,20 @@
                   {{ end }}
               {{ end }}
           </ul>      
-          <p id="noEventsMessage">Geen activiteiten deze maand</p>    
+          <p id="event-calendar-empty">Geen activiteiten deze maand</p>
           </div>
-          <a href="{{ "/events/" | relURL }}" class="event-button">Bekijk alle events...</a>
+          <a href="{{ "/events/" | relURL }}" class="content-action-link">Bekijk alle events...</a>
           </div>
         </div>
     </div>
   </div>
-  <div id="about-container">
+  <div id="about-section">
+    <span id="over-ons" class="section-anchor" aria-hidden="true"></span>
     <div class="section">
-    <div class="container-left">
+    <div class="content-column-left">
       <img src="{{ if .Params.about_image }}{{ .Params.about_image | relURL }}{{ else }}{{ "images/about.jpeg" | relURL }}{{ end }}" alt="{{ .Params.about_image_alt | default "Over BEGR!P" }}">
     </div>
-    <div class="container-right">
+    <div class="content-column-right">
       <h1>Over ons</h1>
       <p>{{ .Params.about }}...
       </p>
@@ -51,10 +53,11 @@
     </div>
   </div>
   </div>
-  <div class="blog-devider devider"></div>
-  <div id="blog-container">
+  <div class="blog-divider section-divider"></div>
+  <div id="blog-section">
+    <span id="blog" class="section-anchor" aria-hidden="true"></span>
     <div class="section">
-    <div class="container-left">
+    <div class="content-column-left">
       <div class="instagram-feed-widget">
         <h1>@begripassen</h1>
         <iframe
@@ -63,14 +66,14 @@
           loading="lazy"
           referrerpolicy="no-referrer-when-downgrade">
         </iframe>
-        <a href="https://www.instagram.com/begripassen/" target="_blank" rel="noopener noreferrer" class="event-button">Bekijk op Instagram</a>
+        <a href="https://www.instagram.com/begripassen/" target="_blank" rel="noopener noreferrer" class="content-action-link">Bekijk op Instagram</a>
       </div>
     </div>
-    <div class="container-right">
-      <div class="blog-widget">
+    <div class="content-column-right">
+      <div class="blog-feed">
         <h1>Recente Blogs</h1>
-        <div class="post-list">   
-          <ul class="blog-list">
+        <div class="blog-post-list">
+          <ul class="blog-post-items">
             {{ $recentPosts := first 5 (where .Site.RegularPages "Section" "blogs") }}
             {{ range $recentPosts.ByDate.Reverse }}
                 <a href="{{ .RelPermalink }}"><li>
@@ -80,21 +83,23 @@
             {{ end }}
         </ul>     
         </div>
-        <a href="{{ "/blogs/" | relURL }}" class="event-button">Bekijk alle blogs...</a>
+        <a href="{{ "/blogs/" | relURL }}" class="content-action-link">Bekijk alle blogs...</a>
     </div>
   </div>
   </div>
   </div>
-  <div class="nieuwsbrief-devider devider"></div>
-  <div id="nieuwsbrief-container">
+  <div class="newsletter-divider section-divider"></div>
+  <div id="newsletter-section">
+    <span id="nieuwsbrief" class="section-anchor" aria-hidden="true"></span>
     <div class="section">
       <h1>Nieuwsbrief</h1>  
       <p>{{ .Params.newsletter }}</p>
       {{- partial "newsletter" . -}}
     </div>
   </div>
-  <div class="steunons-devider devider"></div>
-  <div id="steunons-container">
+  <div class="support-divider section-divider"></div>
+  <div id="support-section">
+    <span id="steun-ons" class="section-anchor" aria-hidden="true"></span>
     <div class="section">
       <div class="support-overview">
         <h1>Steun Ons</h1>
@@ -121,8 +126,9 @@
       </div>
     </div>
   </div>
-  <div class="contact-devider devider"></div>
-  <div id="contact-container">
+  <div class="contact-divider section-divider"></div>
+  <div id="contact-section">
+    <span id="contact" class="section-anchor" aria-hidden="true"></span>
     <div class="section">
       <div class="contact-intro">
         <h1>Contact</h1>
@@ -141,7 +147,7 @@
       </div>
     </div>
   </div>
-  <div class="footer-devider devider"></div>
+  <div class="footer-divider section-divider"></div>
   {{- partial "footer.html" . -}}
 </main>
 {{ end }}

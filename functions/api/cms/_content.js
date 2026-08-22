@@ -197,11 +197,55 @@ export function slugify(value) {
     .slice(0, 90);
 }
 
-function normalizeEventDate(value) {
+const AMSTERDAM_TIME_ZONE = "Europe/Amsterdam";
+const amsterdamParts = new Intl.DateTimeFormat("en-CA", {
+  timeZone: AMSTERDAM_TIME_ZONE,
+  year: "numeric", month: "2-digit", day: "2-digit",
+  hour: "2-digit", minute: "2-digit", second: "2-digit", hourCycle: "h23",
+});
+const amsterdamOffset = new Intl.DateTimeFormat("en-US", {
+  timeZone: AMSTERDAM_TIME_ZONE, timeZoneName: "longOffset",
+  hour: "2-digit", minute: "2-digit", hourCycle: "h23",
+});
+
+function dateParts(parts) {
+  return Object.fromEntries(parts.map(({ type, value }) => [type, value]));
+}
+
+function offsetMinutesAt(timestamp) {
+  const zone = dateParts(amsterdamOffset.formatToParts(new Date(timestamp))).timeZoneName || "GMT";
+  const match = zone.match(/^GMT(?:([+-])(\d{1,2})(?::?(\d{2}))?)?$/);
+  if (!match || !match[1]) return 0;
+  return (match[1] === "+" ? 1 : -1) * (Number(match[2]) * 60 + Number(match[3] || 0));
+}
+
+function sameAmsterdamWallTime(timestamp, expected) {
+  const actual = dateParts(amsterdamParts.formatToParts(new Date(timestamp)));
+  return ["year", "month", "day", "hour", "minute", "second"].every((key) => actual[key] === expected[key]);
+}
+
+export function normalizeEventDate(value) {
   const raw = cleanString(value);
-  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/.test(raw)) return `${raw}:00.000Z`;
-  if (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$/.test(raw)) return `${raw}.000Z`;
-  return raw;
+  if (/(?:Z|[+-]\d{2}:\d{2})$/.test(raw)) return raw;
+  const match = raw.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2})(?:\.\d{1,9})?)?$/);
+  if (!match) return raw;
+  const [, year, month, day, hour, minute, second = "00"] = match;
+  const wall = { year, month, day, hour, minute, second };
+  const wallAsUtc = Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second));
+  let offset = offsetMinutesAt(wallAsUtc);
+  let timestamp = wallAsUtc - offset * 60_000;
+  const refinedOffset = offsetMinutesAt(timestamp);
+  if (refinedOffset !== offset) {
+    offset = refinedOffset;
+    timestamp = wallAsUtc - offset * 60_000;
+  }
+  if (!sameAmsterdamWallTime(timestamp, wall)) {
+    throw new PublicError("Kies een bestaande datum en tijd in Nederland.", 422, "invalid_date", {
+      fields: { date: "Deze tijd bestaat niet door de overgang naar zomertijd." },
+    });
+  }
+  const absolute = Math.abs(offset);
+  return `${year}-${month}-${day}T${hour}:${minute}:${second}.000${offset < 0 ? "-" : "+"}${String(Math.floor(absolute / 60)).padStart(2, "0")}:${String(absolute % 60).padStart(2, "0")}`;
 }
 
 function normalizeBlogDate(value) {
@@ -254,14 +298,17 @@ function validateLength(value, max, field, errors) {
 
 function isRealDate(value, needsTime) {
   const expression = needsTime
-    ? /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::\d{2}(?:\.\d{3})?Z?)?$/
+    ? /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::\d{2}(?:\.\d{3})?)?(?:Z|[+-]\d{2}:\d{2})?$/
     : /^(\d{4})-(\d{2})-(\d{2})$/;
   const match = String(value).match(expression);
   if (!match) return false;
   const [, year, month, day, hour = "0", minute = "0"] = match;
   const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute)));
+  const offset = String(value).match(/[+-](\d{2}):(\d{2})$/);
+  const offsetIsValid = !offset || (Number(offset[1]) <= 14 && Number(offset[2]) < 60);
   return date.getUTCFullYear() === Number(year) && date.getUTCMonth() + 1 === Number(month) &&
-    date.getUTCDate() === Number(day) && Number(hour) < 24 && Number(minute) < 60;
+    date.getUTCDate() === Number(day) && Number(hour) < 24 && Number(minute) < 60 &&
+    offsetIsValid && !Number.isNaN(new Date(value).getTime());
 }
 
 function safeWebUrl(value, { relative = false } = {}) {

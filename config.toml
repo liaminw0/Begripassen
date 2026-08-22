@@ -3,4 +3,5 @@ languageCode = 'nl-NL'
 defaultContentLanguage = "nl"
 title = 'My New Hugo Site'
 theme = 'Begrip'
+timeZone = "Europe/Amsterdam"
 buildFuture = true
