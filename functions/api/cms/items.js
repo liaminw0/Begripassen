@@ -36,8 +36,9 @@ export async function onRequestGet(context) {
     if (requestedPath) {
       return json({ ok: true, item: await readItem(config, type, requestedPath) });
     }
-    if (type === "home") {
-      return json({ ok: true, item: await readItem(config, type, definition.path) });
+    if (type === "home" || type === "about") {
+      const path = type === "about" ? `${definition.path}/index.md` : definition.path;
+      return json({ ok: true, item: await readItem(config, type, path, true) });
     }
 
     const offset = Math.max(0, Number.parseInt(searchParams.get("offset") || "0", 10) || 0);

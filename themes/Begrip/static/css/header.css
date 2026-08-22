@@ -17,6 +17,7 @@ header {
   position: fixed;
   display: flex;
   justify-content: center;
+  box-shadow: 10px 0 30px rgba(18, 60, 37, 0.24);
 
 }
 
@@ -134,5 +135,6 @@ header {
   .site-header-nav.is-active {
     left: 0;
     background-color: #f7fbf4;
+    box-shadow: 12px 0 34px rgba(18, 60, 37, 0.28);
   }
 }

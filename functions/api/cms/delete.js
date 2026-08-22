@@ -13,7 +13,7 @@ export async function onRequestPost(context) {
     const payload = await readJson(context.request, 16 * 1024);
     const type = String(payload.type || "");
     if (!getTypeDefinition(type)) throw new PublicError("Onbekend inhoudstype.", 400, "unknown_type");
-    if (type === "home") throw new PublicError("De homepagina kan niet worden verwijderd.", 400, "delete_forbidden");
+    if (type === "home" || type === "about") throw new PublicError("Deze vaste pagina kan niet worden verwijderd.", 400, "delete_forbidden");
 
     const path = assertContentPath(type, String(payload.path || ""));
     const config = getRepositoryConfig(context.env);

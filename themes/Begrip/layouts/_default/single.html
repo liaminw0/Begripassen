@@ -2,7 +2,8 @@
 <main>
   {{ $defaultImage := "images/placeholder.png" | relURL }}
   {{ $heroImage := "" }}
-  {{ if or (eq .Section "events") (eq .Section "blogs") }}
+  {{ $isAbout := eq .File.Dir "over-ons/" }}
+  {{ if or (eq .Section "events") (eq .Section "blogs") $isAbout }}
     {{ $heroImage = $defaultImage }}
   {{ end }}
   {{ with .Params.image }}
@@ -14,7 +15,7 @@
       {{ end }}
     {{ end }}
   {{ end }}
-  <div id="article-page" class="{{ if eq .Section "events" }}article-event{{ else if eq .Section "blogs" }}article-default article-blog{{ else }}article-default{{ end }}">
+  <div id="article-page" class="{{ if eq .Section "events" }}article-event{{ else if eq .Section "blogs" }}article-default article-blog{{ else if $isAbout }}article-default article-about{{ else }}article-default{{ end }}">
     <div class="article-shell">
       {{ if eq .Section "events" }}
       <header class="article-hero-wrap{{ if $heroImage }} has-hero-image{{ end }}">
@@ -37,19 +38,21 @@
         {{ end }}
       </header>
       {{ else }}
-      <header class="article-hero-wrap{{ if and (eq .Section "blogs") $heroImage }} has-hero-image{{ end }}">
+      <header class="article-hero-wrap{{ if and (or (eq .Section "blogs") $isAbout) $heroImage }} has-hero-image{{ end }}">
         <div class="article-hero">
           <div class="article-hero-copy">
-            <p class="article-kicker">BEGR!P Artikel</p>
+            {{ if not $isAbout }}<p class="article-kicker">BEGR!P Artikel</p>{{ end }}
             <h1 id="article-title">{{ .Title }}</h1>
+            {{ if not $isAbout }}
             <div class="article-meta-bar">
               <span>{{ dateFormat "2 January 2006" .Date }}</span>
               {{ with .Param "author" }}<span>{{ . }}</span>{{ end }}
               <span>{{ .WordCount }} woorden</span>
             </div>
+            {{ end }}
           </div>
         </div>
-        {{ if and (eq .Section "blogs") $heroImage }}
+        {{ if and (or (eq .Section "blogs") $isAbout) $heroImage }}
         <div class="article-hero-image">
           <img src="{{ $heroImage }}" alt="{{ .Params.image_alt | default .Title }}">
         </div>
@@ -69,10 +72,12 @@
         <a href="{{ "/events/" | relURL }}" class="article-back-link">Terug naar events</a>
         {{ else if eq .Section "blogs" }}
         <a href="{{ "/blogs/" | relURL }}" class="article-back-link">Terug naar blogs</a>
+        {{ else if $isAbout }}
+        <a href="{{ "/" | relURL }}#home" class="article-back-link">Terug naar home</a>
         {{ else }}
         <a href="{{ printf "/%s/" .Section | relURL }}" class="article-back-link">Terug naar overzicht</a>
         {{ end }}
-        <a href="{{ "/" | relURL }}#home" class="article-back-link">Terug naar home</a>
+        {{ if not $isAbout }}<a href="{{ "/" | relURL }}#home" class="article-back-link">Terug naar home</a>{{ end }}
       </div>
     </div>
   </div>

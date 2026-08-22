@@ -2,6 +2,7 @@ import { PublicError } from "./_core.js";
 
 export const CMS_TYPES = {
   home: { path: "content/_index.md", label: "Homepagina" },
+  about: { path: "content/over-ons", label: "Over ons", singleton: true },
   events: { path: "content/events", label: "Evenementen" },
   blogs: { path: "content/blogs", label: "Blogs" },
 };
@@ -14,6 +15,7 @@ const TYPE_FIELDS = {
     "contact_phone_label", "contact_phone", "contact_email_label", "contact_email",
     "contact_instagram_label", "contact_instagram_handle", "contact_instagram_url",
   ]),
+  about: new Set(["title", "date", "author", "image", "image_alt", "draft"]),
   events: new Set([
     "title", "date", "location", "organiser", "image", "image_alt", "show_signup",
     "signup_link", "draft", "summary",
@@ -33,6 +35,7 @@ const FIELD_ALIASES = {
     ContactEmail: "contact_email", ContactInstagramLabel: "contact_instagram_label",
     ContactInstagramHandle: "contact_instagram_handle", ContactInstagramUrl: "contact_instagram_url",
   },
+  about: {},
   events: { author: "organiser" },
   blogs: {},
 };
@@ -93,6 +96,16 @@ export function normalizeFields(type, rawFields = {}) {
       contact_instagram_label: cleanString(fields.contact_instagram_label),
       contact_instagram_handle: cleanString(fields.contact_instagram_handle),
       contact_instagram_url: cleanString(fields.contact_instagram_url),
+    };
+  }
+  if (type === "about") {
+    return {
+      title: cleanString(fields.title) || "Over ons",
+      date: normalizeBlogDate(fields.date),
+      author: cleanString(fields.author),
+      image: cleanString(fields.image),
+      image_alt: cleanString(fields.image_alt) || cleanString(fields.title),
+      draft: booleanValue(fields.draft),
     };
   }
   if (type === "events") {
@@ -266,6 +279,11 @@ export function assertContentPath(type, path) {
     if (value !== definition.path) throw new PublicError("Ongeldig inhoudspad.", 400, "invalid_path");
     return value;
   }
+  if (type === "about") {
+    const expected = `${definition.path}/index.md`;
+    if (value !== expected) throw new PublicError("Ongeldig inhoudspad.", 400, "invalid_path");
+    return value;
+  }
 
   if (!value.startsWith(`${definition.path}/`) || /[\\\u0000-\u001f?#]/.test(value) || value.includes("..")) {
     throw new PublicError("Ongeldig inhoudspad.", 400, "invalid_path");
@@ -280,6 +298,7 @@ export function assertContentPath(type, path) {
 
 export function buildContentPath(type, fields, currentPath = "") {
   if (type === "home") return CMS_TYPES.home.path;
+  if (type === "about") return currentPath ? assertContentPath(type, currentPath) : `${CMS_TYPES.about.path}/index.md`;
   if (currentPath) return assertContentPath(type, currentPath);
   const slug = slugify(fields.title);
   if (!slug) throw new PublicError("Vul een titel in waar een webadres van gemaakt kan worden.", 422, "validation_failed", { fields: { title: "Gebruik letters of cijfers in de titel." } });
@@ -382,6 +401,17 @@ export function validateContent(type, rawFields, body = "") {
     }
     if (!validImageReference(fields.about_image)) errors.about_image = "Kies de afbeelding opnieuw.";
     if (fields.about_image && !fields.about_image_alt) errors.about_image_alt = "Beschrijf kort wat er op de afbeelding staat.";
+  }
+
+  if (type === "about") {
+    if (!fields.title) errors.title = "Vul een titel in.";
+    validateLength(fields.title, 140, "title", errors);
+    if (!fields.date || !isRealDate(fields.date, false)) errors.date = "Kies een geldige datum.";
+    validateLength(fields.author, 120, "author", errors);
+    validateLength(fields.image_alt, 180, "image_alt", errors);
+    if (!validImageReference(fields.image)) errors.image = "Kies de afbeelding opnieuw.";
+    if (fields.image && !fields.image_alt) errors.image_alt = "Beschrijf kort wat er op de afbeelding staat.";
+    validateMarkdown(cleanString(body), errors);
   }
 
   if (type === "events" || type === "blogs") {

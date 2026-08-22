@@ -43,7 +43,8 @@
 }
 
 .article-blog .article-hero-wrap.has-hero-image,
-.article-event .article-hero-wrap.has-hero-image {
+.article-event .article-hero-wrap.has-hero-image,
+.article-about .article-hero-wrap.has-hero-image {
   display: grid;
   grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
   align-items: stretch;
@@ -57,16 +58,42 @@
 }
 
 .article-blog .article-hero-wrap.has-hero-image .article-hero,
-.article-event .article-hero-wrap.has-hero-image .article-hero {
+.article-event .article-hero-wrap.has-hero-image .article-hero,
+.article-about .article-hero-wrap.has-hero-image .article-hero {
   margin: 0;
   border-bottom: 0;
   align-self: stretch;
 }
 
 .article-blog .article-hero-wrap.has-hero-image .article-hero-copy,
-.article-event .article-hero-wrap.has-hero-image .article-hero-copy {
+.article-event .article-hero-wrap.has-hero-image .article-hero-copy,
+.article-about .article-hero-wrap.has-hero-image .article-hero-copy {
   padding: 0.15rem 0;
   justify-content: flex-start;
+}
+
+.article-about .article-hero-wrap.has-hero-image {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.article-about .article-hero-wrap.has-hero-image .article-hero-image {
+  grid-row: 1;
+  height: 20rem;
+  min-height: 0;
+  border-left: 0;
+  border-bottom: 1px solid #d8e4d2;
+}
+
+.article-about .article-hero-wrap.has-hero-image .article-hero-image img {
+  position: static;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+}
+
+.article-about .article-hero-wrap.has-hero-image .article-hero {
+  grid-row: 2;
 }
 
 .article-kicker {
@@ -451,6 +478,22 @@ img[src$='#floatright'] {
 
   .article-actions {
     padding: 0 1rem 1rem;
+  }
+
+  .article-about .article-hero-wrap.has-hero-image {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+
+  .article-about .article-hero-wrap.has-hero-image .article-hero-image {
+    order: -1;
+    border-left: 0;
+    height: auto;
+    min-height: 0;
+  }
+
+  .article-about .article-hero-wrap.has-hero-image .article-hero {
+    padding: 0.95rem 1rem 1rem;
   }
 
   img[src$='#floatleft'],

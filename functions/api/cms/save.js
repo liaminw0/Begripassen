@@ -44,7 +44,7 @@ export async function onRequestPost(context) {
     const config = getRepositoryConfig(context.env);
 
     const existing = await getRepoFile(config, path, { optional: true });
-    const isEdit = type === "home" || Boolean(currentPath);
+    const isEdit = type === "home" || type === "about" || Boolean(currentPath);
     if (!isEdit && existing) {
       throw new PublicError(
         "Er bestaat al inhoud met deze datum en titel. Pas de titel aan en probeer opnieuw.",
@@ -96,7 +96,7 @@ export async function onRequestPost(context) {
       : serializeMarkdownFile(serializedFields, validated.body);
     const result = await commitRepoChanges(config, {
       writes: [...uploadWrites, { path, contentBase64: encodeContentBase64(markdown) }],
-      message: `${validated.fields.draft ? "Bewaar concept" : "Publiceer"} ${type === "home" ? "homepagina" : type === "events" ? "evenement" : "blog"}: ${validated.fields.title || "Home Pagina"}`,
+      message: `${validated.fields.draft ? "Bewaar concept" : "Publiceer"} ${type === "home" ? "homepagina" : type === "about" ? "over-ons-pagina" : type === "events" ? "evenement" : "blog"}: ${validated.fields.title || "Home Pagina"}`,
     });
 
     return json({

@@ -66,6 +66,29 @@ export const contentModels = {
       },
     ],
   },
+  about: {
+    singular: "Over-ons-pagina",
+    plural: "Over ons",
+    description: "Beheer de vaste pagina waarop bezoekers kennismaken met BEGR!P.",
+    newLabel: "Over-ons-pagina",
+    publishLabel: "Over-ons-pagina publiceren",
+    singleton: true,
+    sections: [
+      {
+        id: "basis",
+        label: "Over ons",
+        title: "De vaste informatiepagina",
+        description: "Vertel bezoekers wie BEGR!P is en waar jullie voor staan.",
+        fields: [
+          { name: "title", label: "Titel", type: "text", required: true, maxLength: 140 },
+          { name: "date", label: "Datum", type: "date", required: true, layout: "half" },
+          { name: "author", label: "Auteur", type: "text", maxLength: 120, layout: "half" },
+          { name: "image", altName: "image_alt", label: "Afbeelding", type: "image", help: "Een liggende afbeelding werkt het beste." },
+          { name: "body", label: "Inhoud", type: "richtext", required: true },
+        ],
+      },
+    ],
+  },
   events: {
     singular: "evenement",
     plural: "Evenementen",
@@ -194,6 +217,11 @@ export function createEmptyItem(type) {
     fields.date = localDate();
     fields.author = "BEGR!P";
     fields.draft = true;
+  }
+  if (type === "about") {
+    fields.date = localDate();
+    fields.author = "BEGR!P";
+    fields.draft = false;
   }
   return { type, path: "", publicUrl: "", sha: "", fields, body: "" };
 }

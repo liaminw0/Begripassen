@@ -6,7 +6,7 @@
       {{ $isBaseURL := eq $currentPath "/" }}
       <li class="site-nav-item"><a href="{{ if $isBaseURL }}#home{{ else }}{{ "/" | relURL }}#home{{ end }}"><i class="fa-solid fa-house"></i><p>Home</p></a></li>
       <li class="site-nav-item"><a href="{{ "/events/" | relURL }}"><i class="fa-solid fa-calendar-days"></i><p>Events</p></a></li>
-      <li class="site-nav-item"><a href="{{ if $isBaseURL }}#over-ons{{ else }}{{ "/" | relURL }}#over-ons{{ end }}"><i class="fa-solid fa-circle-info"></i><p>Over Ons</p></a></li>
+      <li class="site-nav-item"><a href="{{ "/over-ons/" | relURL }}"><i class="fa-solid fa-circle-info"></i><p>Over Ons</p></a></li>
       <li class="site-nav-item"><a href="{{ "/blogs/" | relURL }}"><i class="fa-solid fa-blog"></i><p>Blog</p></a></li>
       <li class="site-nav-item"><a href="{{ if $isBaseURL }}#nieuwsbrief{{ else }}{{ "/" | relURL }}#nieuwsbrief{{ end }}"><i class="fa-solid fa-envelope"></i><p>NieuwsBrief</p></a></li>
       <li class="site-nav-item"><a href="{{ if $isBaseURL }}#steun-ons{{ else }}{{ "/" | relURL }}#steun-ons{{ end }}"><i class="fa-solid fa-handshake-angle"></i><p>Steun Ons!</p></a></li>

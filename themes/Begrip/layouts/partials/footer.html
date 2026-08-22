@@ -14,7 +14,7 @@
     <div class="footer-links">
       <a href="{{ if $isBaseURL }}#home{{ else }}{{ "/" | relURL }}#home{{ end }}"><i class="fa-solid fa-house"></i><span>Home</span></a>
       <a href="{{ "/events/" | relURL }}"><i class="fa-solid fa-calendar-days"></i><span>Agenda</span></a>
-      <a href="{{ if $isBaseURL }}#over-ons{{ else }}{{ "/" | relURL }}#over-ons{{ end }}"><i class="fa-solid fa-circle-info"></i><span>Over Ons</span></a>
+      <a href="{{ "/over-ons/" | relURL }}"><i class="fa-solid fa-circle-info"></i><span>Over Ons</span></a>
       <a href="{{ "/blogs/" | relURL }}"><i class="fa-solid fa-blog"></i><span>Blog</span></a>
       <a href="{{ if $isBaseURL }}#nieuwsbrief{{ else }}{{ "/" | relURL }}#nieuwsbrief{{ end }}"><i class="fa-solid fa-envelope"></i><span>NieuwsBrief</span></a>
       <a href="{{ if $isBaseURL }}#steun-ons{{ else }}{{ "/" | relURL }}#steun-ons{{ end }}"><i class="fa-solid fa-handshake-angle"></i><span>Steun Ons!</span></a>

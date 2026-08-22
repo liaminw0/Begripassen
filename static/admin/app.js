@@ -94,6 +94,10 @@ const state = {
   },
 };
 
+function isSingletonType(type) {
+  return type === "home" || type === "about";
+}
+
 function deepClone(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -246,8 +250,8 @@ async function openType(type) {
   destroyRichEditor();
   state.uploadQueue.clear();
 
-  if (type === "home") {
-    await loadItem("home");
+  if (isSingletonType(type)) {
+    await loadItem(type);
     return;
   }
 
@@ -266,7 +270,7 @@ async function openType(type) {
 
 async function loadList(reset = false) {
   const type = state.activeType;
-  if (!type || type === "home") return;
+  if (!type || isSingletonType(type)) return;
   const pagination = state.pagination[type];
   if (pagination.loading || (!pagination.hasMore && !reset)) return;
   const { controller, sequence } = beginRequest();
@@ -387,7 +391,7 @@ async function loadItem(type, path = "") {
   state.activeType = type;
   updateRouteUI("editor");
   elements.editorFields.innerHTML = '<div class="editor-loading"><span></span><p>Inhoud laden…</p></div>';
-  elements.editorTitle.textContent = type === "home" ? "Homepagina laden…" : "Inhoud laden…";
+  elements.editorTitle.textContent = type === "home" ? "Homepagina laden…" : type === "about" ? "Over ons laden…" : "Inhoud laden…";
   focusMainHeading(elements.editor);
   try {
     const payload = await cmsClient.item(type, path, controller.signal);
@@ -720,12 +724,12 @@ function renderEditor(item, { skipRecovery = false } = {}) {
   const type = item.type;
   const model = contentModels[type];
   elements.editorKicker.textContent = item.path ? "Bewerken" : `Nieuw ${model.singular}`;
-  elements.editorTitle.textContent = type === "home" ? "Homepagina bewerken" : item.path ? item.fields.title : model.newLabel;
+  elements.editorTitle.textContent = type === "home" ? "Homepagina bewerken" : type === "about" ? "Over ons bewerken" : item.path ? item.fields.title : model.newLabel;
   elements.editorDescription.textContent = model.description;
   elements.publish.textContent = model.publishLabel;
-  setHidden(elements.saveDraft, type === "home");
-  setHidden(elements.deleteButton, type === "home" || !item.path);
-  elements.contentStatus.textContent = type === "home" ? "Live" : item.fields.draft ? "Concept" : "Gepubliceerd";
+  setHidden(elements.saveDraft, isSingletonType(type));
+  setHidden(elements.deleteButton, isSingletonType(type) || !item.path);
+  elements.contentStatus.textContent = isSingletonType(type) ? "Live" : item.fields.draft ? "Concept" : "Gepubliceerd";
   elements.contentStatus.className = `status-pill ${item.fields.draft ? "status-draft" : "status-published"}`;
   elements.saveState.textContent = "Nog geen wijzigingen";
   clearValidation();
@@ -880,7 +884,7 @@ async function saveItem(intent) {
   if (state.busy || !state.item) return;
   clearValidation();
   const collected = collectForm();
-  if (state.activeType !== "home") collected.fields.draft = intent === "draft";
+  if (!isSingletonType(state.activeType)) collected.fields.draft = intent === "draft";
   const errors = validateItem(state.activeType, collected.fields, collected.body);
   if (Object.keys(errors).length) {
     showValidation(errors);
@@ -948,17 +952,17 @@ function applySavedItem(item) {
   state.pendingRecovery = null;
   state.dirty = false;
   elements.editorKicker.textContent = "Bewerken";
-  elements.editorTitle.textContent = item.type === "home" ? "Homepagina bewerken" : item.fields.title;
-  elements.contentStatus.textContent = item.type === "home" ? "Live" : item.fields.draft ? "Concept" : "Gepubliceerd";
+  elements.editorTitle.textContent = item.type === "home" ? "Homepagina bewerken" : item.type === "about" ? "Over ons bewerken" : item.fields.title;
+  elements.contentStatus.textContent = isSingletonType(item.type) ? "Live" : item.fields.draft ? "Concept" : "Gepubliceerd";
   elements.contentStatus.className = `status-pill ${item.fields.draft ? "status-draft" : "status-published"}`;
-  setHidden(elements.deleteButton, item.type === "home");
+  setHidden(elements.deleteButton, isSingletonType(item.type));
   updateConditions();
   updateCharacterCounts();
   clearValidation();
 }
 
 function updateCachedList(item) {
-  if (item.type === "home") return;
+  if (isSingletonType(item.type)) return;
   const summary = item.fields.summary || item.body.split("\n").find(Boolean) || "";
   const listItem = {
     path: item.path,
@@ -1027,7 +1031,7 @@ function showPreview() {
 }
 
 async function deleteItem() {
-  if (!state.item?.path || state.activeType === "home" || state.busy) return;
+  if (!state.item?.path || isSingletonType(state.activeType) || state.busy) return;
   const confirmed = await confirmAction({
     title: `${contentModels[state.activeType].singular === "blog" ? "Blog" : "Evenement"} verwijderen?`,
     message: `“${state.item.fields.title}” en de bijbehorende afbeeldingen worden definitief verwijderd. Dit kan niet via het beheer worden teruggedraaid.`,
@@ -1134,7 +1138,7 @@ elements.editorBack.addEventListener("click", async () => {
   destroyRichEditor();
   state.uploadQueue.clear();
   state.dirty = false;
-  if (state.activeType === "home") await goToOverview();
+  if (isSingletonType(state.activeType)) await goToOverview();
   else {
     updateRouteUI("list");
     renderList();
@@ -1200,7 +1204,7 @@ window.addEventListener("beforeunload", (event) => {
 document.addEventListener("keydown", (event) => {
   if (!(event.ctrlKey || event.metaKey) || event.key.toLowerCase() !== "s" || state.route !== "editor") return;
   event.preventDefault();
-  saveItem(state.activeType === "home" ? "publish" : "draft");
+  saveItem(isSingletonType(state.activeType) ? "publish" : "draft");
 });
 
 boot();

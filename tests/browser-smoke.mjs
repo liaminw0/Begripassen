@@ -255,7 +255,7 @@ try {
   await command("Page.enable");
   await waitFor("document.querySelector('#workspace') && !document.querySelector('#workspace').classList.contains('hidden')", "het overzicht");
   assert.equal(await evaluate("document.documentElement.lang"), "nl");
-  assert.equal(await evaluate("document.querySelectorAll('[data-open-type]').length"), 3);
+  assert.equal(await evaluate("document.querySelectorAll('[data-open-type]').length"), 4);
   const desktopDimensions = await evaluate(`({
     scrollWidth: document.documentElement.scrollWidth,
     width: window.innerWidth,
