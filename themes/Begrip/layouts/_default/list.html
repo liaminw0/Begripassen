@@ -59,6 +59,7 @@
     </section>
   </div>
   {{ else if eq .Section "blogs" }}
+  {{ $publishedBlogs := where .Pages "Date" "le" now }}
   <div id="blogs-page">
     <section class="section blogs-hero">
       <div class="blogs-hero-copy">
@@ -69,14 +70,14 @@
       </div>
       <div class="blogs-hero-panel">
         <h2>Overzicht</h2>
-        <p>{{ len .Pages }} blogs</p>
+        <p>{{ len $publishedBlogs }} blogs</p>
       </div>
     </section>
 
     <section class="section blogs-listing">
-      {{ if gt (len .Pages) 0 }}
+      {{ if gt (len $publishedBlogs) 0 }}
       <ul class="listpage-items blogs-grid">
-      {{ range .Pages.ByDate.Reverse }}
+      {{ range $publishedBlogs.ByDate.Reverse }}
         <li class="blog-item">
           <a class="blog-link" href="{{ .RelPermalink }}">
             <div class="blog-top">
