@@ -1,7 +1,7 @@
 +++
 title = "Home Pagina"
 heading = "Met BEGR!P voor elkaar kom je verder. BEGR!P wil verbinden, mogelijk maken, aanslingeren en ondersteunen, want we zien kansen voor Assen."
-about = "We horen vaak dat Assen een saaie plek is waar weinig te doen is. Wij willen zelf het initiatief nemen en de handen uit de mouwen steken. Daarnaast zien we dat er al veel initiatieven zijn, maar dat de verbinding daartussen vaak ontbreekt. Wij zien hier kansen"
+about = "Niet afwachten, maar aanpakken. Want jongeren zitten vol talent en ideeën."
 about_image = "/images/uploads/1774867215388-img-20260311-wa0004.webp"
 about_image_alt = "Over BEGR!P"
 about_link_text = "Lees verder..."
